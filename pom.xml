@@ -28,8 +28,8 @@
     </developers>
 
     <scm>
-        <connection>scm:git:git://github.com/pasinduog/api-response.git</connection>
-        <developerConnection>scm:git:ssh://github.com:pasinduog/api-response.git</developerConnection>
+        <connection>scm:git:https://github.com/pasinduog/api-response.git</connection>
+        <developerConnection>scm:git:https://github.com/pasinduog/api-response.git</developerConnection>
         <url>https://github.com/pasinduog/api-response</url>
     </scm>
 
