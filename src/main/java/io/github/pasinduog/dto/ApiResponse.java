@@ -1,4 +1,4 @@
-package io.github.pasinduog;
+package io.github.pasinduog.dto;
 
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
