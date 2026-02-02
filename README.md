@@ -9,15 +9,17 @@ A lightweight, type-safe API Response wrapper for Spring Boot applications. Stan
 
 ## ✨ Features
 
-- 🎯 **Consistent Structure** - All responses follow the same format: `message`, `data`, `timestamp`
+- 🎯 **Consistent Structure** - All responses follow the same format: `status`, `traceId`, `message`, `data`, `timestamp`
 - 🔒 **Type-Safe** - Full generic type support with compile-time type checking
-- ⏰ **Auto Timestamps** - Automatic ISO-8601 formatted timestamps on every response
+- 🔍 **Distributed Tracing** - Auto-generated UUID trace IDs for request tracking *(New in v1.2.0)*
+- ⏰ **Auto Timestamps** - Automatic ISO-8601 UTC formatted timestamps on every response
 - 🏭 **Factory Methods** - Clean static methods: `success()`, `created()`, `status()`
 - 🚀 **Zero Config** - Works immediately with no configuration required
 - 🪶 **Lightweight** - Only ~15KB with minimal dependencies (Spring Web + Lombok)
 - 📦 **Immutable** - Thread-safe with final fields
 - 🔌 **Spring Native** - Built on `ResponseEntity` and `HttpStatus`
 - 🛡️ **Global Exception Handler** - Built-in ProblemDetail RFC 7807 error handling
+- 🎭 **Custom Business Exceptions** - Abstract `ApiException` class for domain-specific errors *(New in v1.2.0)*
 - ✅ **Validation Support** - Automatic `@Valid` annotation error handling
 
 ## 📦 Requirements
@@ -34,20 +36,20 @@ A lightweight, type-safe API Response wrapper for Spring Boot applications. Stan
 <dependency>
     <groupId>io.github.pasinduog</groupId>
     <artifactId>api-response</artifactId>
-    <version>1.1.0</version>
+    <version>1.2.0</version>
 </dependency>
 ```
 
 ### Gradle
 
 ```gradle
-implementation 'io.github.pasinduog:api-response:1.1.0'
+implementation 'io.github.pasinduog:api-response:1.2.0'
 ```
 
 ### Gradle Kotlin DSL
 
 ```kotlin
-implementation("io.github.pasinduog:api-response:1.1.0")
+implementation("io.github.pasinduog:api-response:1.2.0")
 ```
 
 ## 🎯 Quick Start
@@ -72,17 +74,19 @@ public class UserController {
 **Response:**
 ```json
 {
+  "status": 200,
+  "traceId": "550e8400-e29b-41d4-a716-446655440000",
   "message": "User retrieved successfully",
   "data": {
     "id": 1,
     "name": "John Doe",
     "email": "john@example.com"
   },
-  "timestamp": "2026-02-01T10:30:45.123"
+  "timestamp": "2026-02-01T10:30:45.123Z"
 }
 ```
 
-## 🛡️ Built-in Exception Handling (New in v1.1.0)
+## 🛡️ Built-in Exception Handling (Enhanced in v1.2.0)
 
 The library includes a **production-ready `GlobalExceptionHandler`** that automatically handles common exceptions using Spring Boot's **ProblemDetail (RFC 7807)** standard.
 
@@ -91,8 +95,61 @@ The library includes a **production-ready `GlobalExceptionHandler`** that automa
 ✅ **General Exception Handler** - Catches all unhandled exceptions  
 ✅ **Validation Error Handler** - Automatically processes `@Valid` annotation failures  
 ✅ **Null Pointer Handler** - Specific handling for NullPointerException  
+✅ **Custom ApiException Handler** - Handles custom business exceptions extending `ApiException` *(New in v1.2.0)*  
 ✅ **Automatic Logging** - SLF4J integration for all errors  
 ✅ **Timestamp Support** - All error responses include timestamps  
+
+### Custom Business Exceptions (New in v1.2.0)
+
+Instead of throwing generic exceptions, you can now extend the **abstract `ApiException` class** to create domain-specific exceptions with automatic exception handling:
+
+```java
+public class ResourceNotFoundException extends ApiException {
+    public ResourceNotFoundException(String resource, Long id) {
+        super(String.format("%s not found with ID: %d", resource, id), HttpStatus.NOT_FOUND);
+    }
+}
+
+public class UnauthorizedAccessException extends ApiException {
+    public UnauthorizedAccessException(String message) {
+        super(message, HttpStatus.UNAUTHORIZED);
+    }
+}
+
+public class BusinessRuleViolationException extends ApiException {
+    public BusinessRuleViolationException(String message) {
+        super(message, HttpStatus.CONFLICT);
+    }
+}
+```
+
+**Usage in Controllers:**
+
+```java
+@GetMapping("/{id}")
+public ResponseEntity<ApiResponse<User>> getUser(@PathVariable Long id) {
+    User user = userService.findById(id)
+        .orElseThrow(() -> new ResourceNotFoundException("User", id));
+    return ApiResponse.success("User retrieved successfully", user);
+}
+```
+
+**Automatic Error Response (RFC 7807):**
+```json
+{
+  "type": "about:blank",
+  "title": "Not Found",
+  "status": 404,
+  "detail": "User not found with ID: 123",
+  "timestamp": "2026-02-02T10:30:45.123Z"
+}
+```
+
+The `GlobalExceptionHandler` automatically:
+- Extracts the HTTP status from your custom exception
+- Formats it as a ProblemDetail response
+- Logs the error with appropriate severity
+- Includes timestamps for traceability
 
 ### Example: Validation Errors
 
@@ -326,9 +383,11 @@ public class CustomExceptionHandler {
 
 | Field | Type | Description |
 |-------|------|-------------|
+| `status` | `Integer` | HTTP status code (e.g., 200, 201, 404) - *Added in v1.2.0* |
+| `traceId` | `UUID` | Unique identifier for request tracing and log correlation - *Added in v1.2.0* |
 | `message` | `String` | Human-readable message describing the response |
 | `data` | `T` (Generic) | Response payload (can be any type or null) |
-| `timestamp` | `LocalDateTime` | ISO-8601 formatted timestamp (auto-generated) |
+| `timestamp` | `Instant` | ISO-8601 formatted UTC timestamp (auto-generated) |
 
 ## 🔍 Response Structure
 
@@ -336,9 +395,11 @@ All responses follow this consistent structure:
 
 ```json
 {
+  "status": 200,
+  "traceId": "550e8400-e29b-41d4-a716-446655440000",
   "message": "string",
   "data": {},
-  "timestamp": "2026-02-01T10:30:45.123456"
+  "timestamp": "2026-02-01T10:30:45.123456Z"
 }
 ```
 
@@ -347,43 +408,51 @@ All responses follow this consistent structure:
 **Single Object:**
 ```json
 {
+  "status": 200,
+  "traceId": "550e8400-e29b-41d4-a716-446655440000",
   "message": "Product found",
   "data": {
     "id": 1,
     "name": "Laptop",
     "price": 999.99
   },
-  "timestamp": "2026-02-01T10:30:45.123"
+  "timestamp": "2026-02-01T10:30:45.123Z"
 }
 ```
 
 **Array/List:**
 ```json
 {
+  "status": 200,
+  "traceId": "550e8400-e29b-41d4-a716-446655440000",
   "message": "Products retrieved",
   "data": [
     {"id": 1, "name": "Laptop"},
     {"id": 2, "name": "Mouse"}
   ],
-  "timestamp": "2026-02-01T10:30:45.123"
+  "timestamp": "2026-02-01T10:30:45.123Z"
 }
 ```
 
 **No Data (Void):**
 ```json
 {
+  "status": 200,
+  "traceId": "550e8400-e29b-41d4-a716-446655440000",
   "message": "Product deleted successfully",
   "data": null,
-  "timestamp": "2026-02-01T10:30:45.123"
+  "timestamp": "2026-02-01T10:30:45.123Z"
 }
 ```
 
 **Error Response:**
 ```json
 {
+  "status": 404,
+  "traceId": "550e8400-e29b-41d4-a716-446655440000",
   "message": "Product not found with ID: 123",
   "data": null,
-  "timestamp": "2026-02-01T10:30:45.123"
+  "timestamp": "2026-02-01T10:30:45.123Z"
 }
 ```
 
@@ -422,22 +491,52 @@ ResponseEntity<ApiResponse<Map<String, Object>>> getMetadata();
 ResponseEntity<ApiResponse<Void>> deleteResource();
 ```
 
-### 4. Global Exception Handling
+### 4. Custom Business Exceptions (New in v1.2.0)
 
-**Version 1.1.0+ includes a built-in `GlobalExceptionHandler`** that uses Spring Boot's ProblemDetail (RFC 7807) for standardized error responses. It automatically handles:
-- General exceptions (500 Internal Server Error)
-- Validation errors from `@Valid` annotations (400 Bad Request)
-- Null pointer exceptions (500 Internal Server Error)
+**Version 1.2.0+ includes an abstract `ApiException` class** for creating domain-specific exceptions. The built-in `GlobalExceptionHandler` automatically handles them with the correct HTTP status:
 
-You can also create custom exception handlers alongside the built-in one:
+```java
+// Define custom exceptions
+public class ResourceNotFoundException extends ApiException {
+    public ResourceNotFoundException(String resource, Long id) {
+        super(String.format("%s not found with ID: %d", resource, id), HttpStatus.NOT_FOUND);
+    }
+}
+
+public class InsufficientBalanceException extends ApiException {
+    public InsufficientBalanceException(String accountId) {
+        super("Insufficient balance in account: " + accountId, HttpStatus.PAYMENT_REQUIRED);
+    }
+}
+
+// Use them in your service/controller
+@GetMapping("/{id}")
+public ResponseEntity<ApiResponse<User>> getUser(@PathVariable Long id) {
+    User user = userRepository.findById(id)
+        .orElseThrow(() -> new ResourceNotFoundException("User", id));
+    return ApiResponse.success("User found", user);
+}
+```
+
+**Benefits:**
+- ✅ No need to manually create `@ExceptionHandler` methods
+- ✅ Automatic RFC 7807 ProblemDetail formatting
+- ✅ Type-safe with compile-time checking
+- ✅ Clean, readable code
+
+You can still create additional custom exception handlers if needed:
 
 ```java
 @ControllerAdvice
 public class CustomExceptionHandler {
     
-    @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ApiResponse<Void>> handleNotFound(ResourceNotFoundException ex) {
-        return ApiResponse.status(ex.getMessage(), HttpStatus.NOT_FOUND);
+    @ExceptionHandler(ThirdPartyApiException.class)
+    public ProblemDetail handleThirdPartyError(ThirdPartyApiException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+            HttpStatus.BAD_GATEWAY, ex.getMessage()
+        );
+        problem.setProperty("timestamp", Instant.now());
+        return problem;
     }
 }
 ```
@@ -494,9 +593,11 @@ class UserControllerTest {
 
         mockMvc.perform(get("/api/users/1"))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(200))
                 .andExpect(jsonPath("$.message").value("User retrieved successfully"))
                 .andExpect(jsonPath("$.data.id").value(1))
                 .andExpect(jsonPath("$.data.name").value("John Doe"))
+                .andExpect(jsonPath("$.traceId").exists())
                 .andExpect(jsonPath("$.timestamp").exists());
     }
 
@@ -509,8 +610,10 @@ class UserControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\":\"Jane Doe\",\"email\":\"jane@example.com\"}"))
                 .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.status").value(201))
                 .andExpect(jsonPath("$.message").value("User created successfully"))
-                .andExpect(jsonPath("$.data.id").value(1));
+                .andExpect(jsonPath("$.data.id").value(1))
+                .andExpect(jsonPath("$.traceId").exists());
     }
 }
 ```
@@ -542,6 +645,76 @@ public ResponseEntity<ApiResponse<User>> getUser(@PathVariable Long id) {
 ```
 
 ## ❓ FAQ
+
+### How do I use trace IDs for debugging? *(New in v1.2.0)*
+
+Every response includes an auto-generated UUID `traceId`. You can use it to correlate logs across your distributed system:
+
+**Response:**
+```json
+{
+  "status": 200,
+  "traceId": "550e8400-e29b-41d4-a716-446655440000",
+  "message": "User created",
+  "data": {...},
+  "timestamp": "2026-02-01T10:30:45.123Z"
+}
+```
+
+**In your logs:**
+```java
+@Service
+@Slf4j
+public class UserService {
+    public User createUser(UserDto dto) {
+        log.info("Creating user with email: {}", dto.getEmail());
+        // ... business logic
+        return user;
+    }
+}
+```
+
+You can also pass the trace ID to downstream services for end-to-end tracing. To use a custom trace ID instead of auto-generated:
+
+```java
+UUID customTraceId = UUID.fromString(request.getHeader("X-Trace-Id"));
+ApiResponse<User> response = ApiResponse.<User>builder()
+    .status(HttpStatus.OK.value())
+    .traceId(customTraceId)
+    .message("User found")
+    .data(user)
+    .build();
+return ResponseEntity.ok(response);
+```
+
+### How do I create custom business exceptions? *(New in v1.2.0)*
+
+Extend the abstract `ApiException` class to create domain-specific exceptions:
+
+```java
+public class ResourceNotFoundException extends ApiException {
+    public ResourceNotFoundException(String resource, Long id) {
+        super(String.format("%s not found with ID: %d", resource, id), HttpStatus.NOT_FOUND);
+    }
+}
+
+public class DuplicateResourceException extends ApiException {
+    public DuplicateResourceException(String message) {
+        super(message, HttpStatus.CONFLICT);
+    }
+}
+```
+
+Then throw them in your code - the `GlobalExceptionHandler` will automatically convert them to RFC 7807 ProblemDetail responses:
+
+```java
+@GetMapping("/{id}")
+public ResponseEntity<ApiResponse<User>> getUser(@PathVariable Long id) {
+    User user = userRepository.findById(id)
+        .orElseThrow(() -> new ResourceNotFoundException("User", id));
+    return ApiResponse.success("User found", user);
+}
+```
 
 ### How do I use the built-in GlobalExceptionHandler?
 
@@ -649,7 +822,10 @@ public ResponseEntity<ApiResponse<Page<User>>> getUsers(Pageable pageable) {
 |---------------------|-------------|
 | Inconsistent structure | ✅ Standardized everywhere |
 | Manual timestamps | ✅ Automatic |
-| More boilerplate | ✅ Concise |
+| No trace IDs | ✅ Built-in UUID trace IDs *(v1.2.0)* |
+| No status in body | ✅ Status code included in response *(v1.2.0)* |
+| Manual exception handling | ✅ Custom ApiException support *(v1.2.0)* |
+| More boilerplate | ✅ Concise factory methods |
 | No message field | ✅ Always includes message |
 
 ## 🤝 Contributing
@@ -697,6 +873,26 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](http:/
 - The open-source community
 
 ## 📈 Version History
+
+### 1.2.0 (February 2026) - Enhanced Response & Custom Exceptions
+
+✅ **New Features:**
+- **Custom ApiException Support** - Abstract base class for creating domain-specific business exceptions
+- **Automatic ApiException Handling** - GlobalExceptionHandler now catches and formats custom ApiException instances
+- **Response Status Field** - Added `status` field to ApiResponse for explicit HTTP status code in response body
+- **Trace ID Support** - Added `traceId` (UUID) field for distributed tracing and log correlation
+- **Improved Timestamp Format** - Changed from `LocalDateTime` to `Instant` (UTC) for consistent timezone handling
+
+🔧 **Improvements:**
+- Better support for microservices architecture with trace IDs
+- Enhanced debugging capabilities with status codes in response body
+- Cleaner exception handling pattern for business logic errors
+- More consistent timestamp format across all responses
+
+📝 **Documentation:**
+- Added comprehensive examples for custom ApiException usage
+- Updated all response examples to include new fields
+- Enhanced best practices section
 
 ### 1.1.0 (February 2026) - Exception Handling Update
 

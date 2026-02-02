@@ -21,7 +21,7 @@ import java.util.Map;
  * </p>
  *
  * @author Pasindu OG
- * @version 1.0
+ * @version 1.2.0
  * @see ProblemDetail
  */
 @RestControllerAdvice
@@ -90,6 +90,27 @@ public class GlobalExceptionHandler {
         log.error("Null pointer exception occurred: ", ex);
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "A null pointer exception occurred.");
         problemDetail.setProperty("timestamp", Instant.now());
+        return problemDetail;
+    }
+
+    /**
+     * Handles all custom exceptions that extend {@link ApiException}.
+     * <p>
+     * This method dynamically extracts the HTTP status and message from the thrown
+     * exception, providing a standardized RFC 7807 response for any domain-specific
+     * error created by the library user.
+     * </p>
+     *
+     * @param ex The custom API exception instance.
+     * @return A {@link ProblemDetail} with the status and message defined in the exception.
+     */
+    @ExceptionHandler(ApiException.class)
+    public ProblemDetail handleApiException(ApiException ex) {
+        log.warn("Business logic exception: {} | Status: {}", ex.getMessage(), ex.getStatus());
+
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(ex.getStatus(), ex.getMessage());
+        problemDetail.setProperty("timestamp", Instant.now());
+
         return problemDetail;
     }
 }
