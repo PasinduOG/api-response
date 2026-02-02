@@ -17,6 +17,8 @@ A lightweight, type-safe API Response wrapper for Spring Boot applications. Stan
 - 🪶 **Lightweight** - Only ~15KB with minimal dependencies (Spring Web + Lombok)
 - 📦 **Immutable** - Thread-safe with final fields
 - 🔌 **Spring Native** - Built on `ResponseEntity` and `HttpStatus`
+- 🛡️ **Global Exception Handler** - Built-in ProblemDetail RFC 7807 error handling
+- ✅ **Validation Support** - Automatic `@Valid` annotation error handling
 
 ## 📦 Requirements
 
@@ -32,20 +34,20 @@ A lightweight, type-safe API Response wrapper for Spring Boot applications. Stan
 <dependency>
     <groupId>io.github.pasinduog</groupId>
     <artifactId>api-response</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
 </dependency>
 ```
 
 ### Gradle
 
 ```gradle
-implementation 'io.github.pasinduog:api-response:1.0.0'
+implementation 'io.github.pasinduog:api-response:1.1.0'
 ```
 
 ### Gradle Kotlin DSL
 
 ```kotlin
-implementation("io.github.pasinduog:api-response:1.0.0")
+implementation("io.github.pasinduog:api-response:1.1.0")
 ```
 
 ## 🎯 Quick Start
@@ -78,6 +80,75 @@ public class UserController {
   },
   "timestamp": "2026-02-01T10:30:45.123"
 }
+```
+
+## 🛡️ Built-in Exception Handling (New in v1.1.0)
+
+The library includes a **production-ready `GlobalExceptionHandler`** that automatically handles common exceptions using Spring Boot's **ProblemDetail (RFC 7807)** standard.
+
+### What's Included
+
+✅ **General Exception Handler** - Catches all unhandled exceptions  
+✅ **Validation Error Handler** - Automatically processes `@Valid` annotation failures  
+✅ **Null Pointer Handler** - Specific handling for NullPointerException  
+✅ **Automatic Logging** - SLF4J integration for all errors  
+✅ **Timestamp Support** - All error responses include timestamps  
+
+### Example: Validation Errors
+
+Add validation to your DTOs:
+
+```java
+public class UserDto {
+    @NotBlank(message = "Name is required")
+    private String name;
+    
+    @Email(message = "Email must be valid")
+    @NotBlank(message = "Email is required")
+    private String email;
+    
+    @Min(value = 18, message = "Age must be at least 18")
+    private Integer age;
+}
+```
+
+Use `@Valid` in your controller:
+
+```java
+@PostMapping
+public ResponseEntity<ApiResponse<User>> createUser(@Valid @RequestBody UserDto dto) {
+    User newUser = userService.create(dto);
+    return ApiResponse.created("User created successfully", newUser);
+}
+```
+
+**Automatic Error Response:**
+```json
+{
+  "type": "about:blank",
+  "title": "Bad Request",
+  "status": 400,
+  "detail": "Validation Failed",
+  "errors": {
+    "email": "Email must be valid",
+    "name": "Name is required",
+    "age": "Age must be at least 18"
+  },
+  "timestamp": "2026-02-02T10:30:45.123Z"
+}
+```
+
+### Logging
+
+All exceptions are automatically logged:
+- **ERROR level** - General exceptions and null pointer exceptions
+- **WARN level** - Validation errors
+
+```
+2026-02-02 10:30:45.123 WARN  c.e.e.GlobalExceptionHandler - Validation error: {email=Email must be valid, name=Name is required}
+2026-02-02 10:30:45.456 ERROR c.e.e.GlobalExceptionHandler - An unexpected error occurred: 
+java.lang.RuntimeException: Database connection failed
+    at com.example.service.UserService.findById(UserService.java:42)
 ```
 
 ## 📖 Usage
@@ -136,11 +207,96 @@ public ResponseEntity<ApiResponse<User>> updateUser(
 }
 ```
 
-### Error Handling with @ControllerAdvice
+### Error Handling with GlobalExceptionHandler
+
+**Version 1.1.0+ includes a built-in `GlobalExceptionHandler`** with Spring Boot's `ProblemDetail` for standardized error responses:
+
+```java
+package io.github.pasinduog.exception;
+
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ProblemDetail;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
+
+@RestControllerAdvice
+@Slf4j
+public class GlobalExceptionHandler {
+    @ExceptionHandler(Exception.class)
+    public ProblemDetail handleAllExceptions(Exception ex) {
+        log.error("An unexpected error occurred: ", ex);
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
+            HttpStatus.INTERNAL_SERVER_ERROR, 
+            "Internal Server Error. Please contact technical support"
+        );
+        problemDetail.setProperty("timestamp", Instant.now());
+        return problemDetail;
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ProblemDetail handleValidationExceptions(MethodArgumentNotValidException ex) {
+        Map<String, String> errorMessage = new HashMap<>();
+        for (FieldError fieldError : ex.getBindingResult().getFieldErrors()) {
+            errorMessage.merge(fieldError.getField(), fieldError.getDefaultMessage(),
+                    (msg1, msg2) -> msg1 + "; " + msg2);
+        }
+        log.warn("Validation error: {}", errorMessage);
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
+            HttpStatus.BAD_REQUEST, 
+            "Validation Failed"
+        );
+        problemDetail.setProperty("errors", errorMessage);
+        problemDetail.setProperty("timestamp", Instant.now());
+        return problemDetail;
+    }
+
+    @ExceptionHandler(NullPointerException.class)
+    public ProblemDetail handleNullPointerExceptions(NullPointerException ex) {
+        log.error("Null pointer exception occurred: ", ex);
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
+            HttpStatus.INTERNAL_SERVER_ERROR, 
+            "A null pointer exception occurred."
+        );
+        problemDetail.setProperty("timestamp", Instant.now());
+        return problemDetail;
+    }
+}
+```
+
+**The GlobalExceptionHandler provides:**
+- 🛡️ **ProblemDetail RFC 7807** - Standard error format
+- ✅ **Validation Error Handling** - Automatic `@Valid` annotation support
+- 📝 **Comprehensive Logging** - SLF4J integration
+- ⏰ **Automatic Timestamps** - On all error responses
+- 🔍 **Null Pointer Protection** - Dedicated NullPointerException handling
+
+**Example Validation Error Response:**
+```json
+{
+  "type": "about:blank",
+  "title": "Bad Request",
+  "status": 400,
+  "detail": "Validation Failed",
+  "errors": {
+    "email": "must be a well-formed email address",
+    "name": "must not be blank"
+  },
+  "timestamp": "2026-02-02T10:30:45.123Z"
+}
+```
+
+You can also create custom exception handlers using ApiResponse:
 
 ```java
 @ControllerAdvice
-public class GlobalExceptionHandler {
+public class CustomExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ApiResponse<Void>> handleNotFound(ResourceNotFoundException ex) {
@@ -150,11 +306,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ApiResponse<Void>> handleBadRequest(IllegalArgumentException ex) {
         return ApiResponse.status("Invalid request: " + ex.getMessage(), HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<Void>> handleGeneral(Exception ex) {
-        return ApiResponse.status("An unexpected error occurred", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
 ```
@@ -273,11 +424,16 @@ ResponseEntity<ApiResponse<Void>> deleteResource();
 
 ### 4. Global Exception Handling
 
-Always use `@ControllerAdvice` for consistent error responses:
+**Version 1.1.0+ includes a built-in `GlobalExceptionHandler`** that uses Spring Boot's ProblemDetail (RFC 7807) for standardized error responses. It automatically handles:
+- General exceptions (500 Internal Server Error)
+- Validation errors from `@Valid` annotations (400 Bad Request)
+- Null pointer exceptions (500 Internal Server Error)
+
+You can also create custom exception handlers alongside the built-in one:
 
 ```java
 @ControllerAdvice
-public class GlobalExceptionHandler {
+public class CustomExceptionHandler {
     
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ApiResponse<Void>> handleNotFound(ResourceNotFoundException ex) {
@@ -387,6 +543,60 @@ public ResponseEntity<ApiResponse<User>> getUser(@PathVariable Long id) {
 
 ## ❓ FAQ
 
+### How do I use the built-in GlobalExceptionHandler?
+
+It's automatically active when the library is in your classpath. Just ensure your Spring Boot application can scan the `io.github.pasinduog.exception` package. If component scanning doesn't pick it up automatically, add:
+
+```java
+@SpringBootApplication
+@ComponentScan(basePackages = {"com.yourapp", "io.github.pasinduog.exception"})
+public class Application {
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
+}
+```
+
+### Can I customize or extend the GlobalExceptionHandler?
+
+Yes! You can add your own `@ControllerAdvice` handlers alongside the built-in one:
+
+```java
+@ControllerAdvice
+public class CustomExceptionHandler {
+    
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handleNotFound(ResourceNotFoundException ex) {
+        return ApiResponse.status(ex.getMessage(), HttpStatus.NOT_FOUND);
+    }
+    
+    @ExceptionHandler(UnauthorizedException.class)
+    public ProblemDetail handleUnauthorized(UnauthorizedException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+            HttpStatus.UNAUTHORIZED, ex.getMessage()
+        );
+        problem.setProperty("timestamp", Instant.now());
+        return problem;
+    }
+}
+```
+
+### How do I disable the GlobalExceptionHandler?
+
+If you want to use your own exception handling strategy, you can exclude it:
+
+```java
+@SpringBootApplication
+@ComponentScan(basePackages = "com.yourapp",
+    excludeFilters = @ComponentScan.Filter(
+        type = FilterType.ASSIGNABLE_TYPE,
+        classes = GlobalExceptionHandler.class
+    ))
+public class Application {
+    // ...
+}
+```
+
 ### How do I customize the timestamp format?
 
 Configure Jackson's ObjectMapper:
@@ -488,6 +698,20 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](http:/
 
 ## 📈 Version History
 
+### 1.1.0 (February 2026) - Exception Handling Update
+
+✅ **New Features:**
+- Built-in `GlobalExceptionHandler` with ProblemDetail (RFC 7807) support
+- Automatic validation error handling for `@Valid` annotations
+- Comprehensive exception logging with SLF4J
+- Null pointer exception handling
+- Standardized error response format with timestamps
+
+🔧 **Improvements:**
+- Enhanced error responses with structured format
+- Better integration with Spring Boot validation
+- Automatic error field aggregation for validation failures
+
 ### 1.0.0 (February 2026) - Initial Release
 
 ✅ **Core Features:**
@@ -500,9 +724,9 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](http:/
 
 🎯 **Roadmap:**
 - Spring WebFlux support (reactive)
-- Validation error helpers
 - Pagination metadata support
 - OpenAPI schema generation
+- Additional exception handlers
 
 ---
 
