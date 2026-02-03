@@ -10,8 +10,22 @@ import org.springframework.http.HttpStatus;
  * to create specific business exceptions. This allows the {@link GlobalExceptionHandler}
  * to automatically capture the specific {@link HttpStatus} and message defined by the subclass.
  * </p>
- * * @author Pasindu OG
- * @version 1.2.0
+ *
+ * <h2>Example Usage:</h2>
+ * <pre>
+ * {@code
+ * public class ResourceNotFoundException extends ApiException {
+ *     public ResourceNotFoundException(String resource, Long id) {
+ *         super(String.format("%s not found with ID: %d", resource, id), HttpStatus.NOT_FOUND);
+ *     }
+ * }
+ * }
+ * </pre>
+ *
+ * @author Pasindu OG
+ * @version 1.3.0
+ * @since 1.2.0
+ * @see GlobalExceptionHandler
  */
 @Getter
 public abstract class ApiException extends RuntimeException {

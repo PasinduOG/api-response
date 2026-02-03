@@ -7,6 +7,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.time.Instant;
 import java.util.HashMap;
@@ -19,10 +20,24 @@ import java.util.Map;
  * and transforms them into a standard {@link ProblemDetail} format (RFC 7807).
  * This ensures a consistent error response structure for API clients.
  * </p>
+ * <p>
+ * <b>Automatically registered</b> via Spring Boot auto-configuration when the library
+ * is on the classpath. No manual configuration required.
+ * </p>
+ * <h2>Handled Exception Types:</h2>
+ * <ul>
+ *   <li>{@link Exception} - Catch-all for unexpected errors (HTTP 500)</li>
+ *   <li>{@link MethodArgumentNotValidException} - Bean validation failures (HTTP 400)</li>
+ *   <li>{@link MethodArgumentTypeMismatchException} - Type conversion errors (HTTP 400)</li>
+ *   <li>{@link NullPointerException} - Null pointer errors (HTTP 500)</li>
+ *   <li>{@link ApiException} - Custom business logic exceptions (custom HTTP status)</li>
+ * </ul>
  *
  * @author Pasindu OG
- * @version 1.2.0
+ * @version 1.3.0
+ * @since 1.1.0
  * @see ProblemDetail
+ * @see ApiException
  */
 @RestControllerAdvice
 @Slf4j
@@ -71,6 +86,26 @@ public class GlobalExceptionHandler {
         log.warn("Validation error: {}", errorMessage);
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Validation Failed");
         problemDetail.setProperty("errors", errorMessage);
+        problemDetail.setProperty("timestamp", Instant.now());
+        return problemDetail;
+    }
+
+    /**
+     * Handles type mismatch errors for method arguments.
+     * <p>
+     * This occurs when a request parameter cannot be converted to the expected type,
+     * such as passing a string where an integer is required.
+     * </p>
+     *
+     * @param ex The type mismatch exception.
+     * @return A {@link ProblemDetail} with HTTP 400 status and a descriptive error message.
+     */
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ProblemDetail handleMethodArgumentTypeMismatchException(org.springframework.web.method.annotation.MethodArgumentTypeMismatchException ex) {
+        String errorMessage = String.format("Invalid value '%s' for parameter '%s'. Expected type: %s.",
+                ex.getValue(), ex.getName(), ex.getRequiredType() != null ? ex.getRequiredType().getSimpleName() : "unknown");
+        log.warn("Type mismatch error: {}", errorMessage);
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, errorMessage);
         problemDetail.setProperty("timestamp", Instant.now());
         return problemDetail;
     }

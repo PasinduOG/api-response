@@ -14,7 +14,7 @@ A lightweight, type-safe API Response wrapper for Spring Boot applications. Stan
 - 🔍 **Distributed Tracing** - Auto-generated UUID trace IDs for request tracking *(New in v1.2.0)*
 - ⏰ **Auto Timestamps** - Automatic ISO-8601 UTC formatted timestamps on every response
 - 🏭 **Factory Methods** - Clean static methods: `success()`, `created()`, `status()`
-- 🚀 **Zero Config** - Works immediately with no configuration required
+- 🚀 **Zero Config** - Spring Boot Auto-Configuration for instant setup *(Enhanced in v1.3.0)*
 - 🪶 **Lightweight** - Only ~15KB with minimal dependencies (Spring Web + Lombok)
 - 📦 **Immutable** - Thread-safe with final fields
 - 🔌 **Spring Native** - Built on `ResponseEntity` and `HttpStatus`
@@ -36,20 +36,20 @@ A lightweight, type-safe API Response wrapper for Spring Boot applications. Stan
 <dependency>
     <groupId>io.github.pasinduog</groupId>
     <artifactId>api-response</artifactId>
-    <version>1.2.0</version>
+    <version>1.3.0</version>
 </dependency>
 ```
 
 ### Gradle
 
 ```gradle
-implementation 'io.github.pasinduog:api-response:1.2.0'
+implementation 'io.github.pasinduog:api-response:1.3.0'
 ```
 
 ### Gradle Kotlin DSL
 
 ```kotlin
-implementation("io.github.pasinduog:api-response:1.2.0")
+implementation("io.github.pasinduog:api-response:1.3.0")
 ```
 
 ## 🎯 Quick Start
@@ -84,6 +84,50 @@ public class UserController {
   },
   "timestamp": "2026-02-01T10:30:45.123Z"
 }
+```
+
+## ⚙️ Auto-Configuration (New in v1.3.0)
+
+The library now features **Spring Boot Auto-Configuration** for truly zero-config setup! Simply add the dependency and everything works automatically.
+
+### What Gets Auto-Configured
+
+When you include this library in your Spring Boot application, the following components are automatically registered:
+
+✅ **GlobalExceptionHandler** - Automatic exception handling with RFC 7807 ProblemDetail format  
+✅ **Component Scanning** - All library components are automatically discovered  
+✅ **Bean Registration** - No manual @ComponentScan or @Import required  
+
+### How It Works
+
+The library includes `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports` which Spring Boot 3.x automatically detects and loads the `ApiResponseAutoConfiguration` class.
+
+**No configuration needed!** Just add the dependency:
+
+```xml
+<dependency>
+    <groupId>io.github.pasinduog</groupId>
+    <artifactId>api-response</artifactId>
+    <version>1.3.0</version>
+</dependency>
+```
+
+### Disabling Auto-Configuration (Optional)
+
+If you need to customize or disable the auto-configuration:
+
+```java
+@SpringBootApplication(exclude = ApiResponseAutoConfiguration.class)
+public class Application {
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
+}
+```
+
+Or in `application.properties`:
+```properties
+spring.autoconfigure.exclude=io.github.pasinduog.config.ApiResponseAutoConfiguration
 ```
 
 ## 🛡️ Built-in Exception Handling (Enhanced in v1.2.0)
@@ -718,7 +762,11 @@ public ResponseEntity<ApiResponse<User>> getUser(@PathVariable Long id) {
 
 ### How do I use the built-in GlobalExceptionHandler?
 
-It's automatically active when the library is in your classpath. Just ensure your Spring Boot application can scan the `io.github.pasinduog.exception` package. If component scanning doesn't pick it up automatically, add:
+**As of v1.3.0**, the `GlobalExceptionHandler` is **automatically configured** via Spring Boot Auto-Configuration. No manual setup is required!
+
+Simply add the library dependency, and the exception handler will be active immediately. The auto-configuration mechanism automatically registers the handler when the library is detected on the classpath.
+
+**For versions prior to 1.3.0**, you needed to ensure component scanning:
 
 ```java
 @SpringBootApplication
@@ -756,7 +804,23 @@ public class CustomExceptionHandler {
 
 ### How do I disable the GlobalExceptionHandler?
 
-If you want to use your own exception handling strategy, you can exclude it:
+**As of v1.3.0**, you can disable it by excluding the auto-configuration:
+
+```java
+@SpringBootApplication(exclude = ApiResponseAutoConfiguration.class)
+public class Application {
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
+}
+```
+
+Or in `application.properties`:
+```properties
+spring.autoconfigure.exclude=io.github.pasinduog.config.ApiResponseAutoConfiguration
+```
+
+**For versions prior to 1.3.0**, you needed to use component scanning filters:
 
 ```java
 @SpringBootApplication
@@ -873,6 +937,31 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](http:/
 - The open-source community
 
 ## 📈 Version History
+
+### 1.3.0 (February 2026) - Auto-Configuration & Stability Release
+
+✅ **New Features:**
+- **Spring Boot Auto-Configuration** - Added `ApiResponseAutoConfiguration` with automatic component registration
+- **META-INF Auto-Configuration File** - Included `org.springframework.boot.autoconfigure.AutoConfiguration.imports` for Spring Boot 3.x
+- **Zero Manual Configuration** - No more need for @ComponentScan or @Import annotations
+
+🔧 **Improvements:**
+- Updated Lombok version to 1.18.42 for improved compatibility and bug fixes
+- Enhanced project stability and dependency management
+- Improved JavaDoc documentation across all classes with comprehensive examples
+- Added @since tags to all classes for better version tracking
+- Refined build process and artifact generation
+
+📝 **Documentation:**
+- Added comprehensive auto-configuration documentation
+- Updated FAQ section with auto-configuration details
+- Enhanced all JavaDoc comments with detailed descriptions and examples
+- Added migration notes for users upgrading from previous versions
+
+🔧 **Technical Updates:**
+- Maintained compatibility with Java 17+ and Spring Boot 3.2.0+
+- Enhanced Maven Central publishing workflow
+- Improved package structure and organization
 
 ### 1.2.0 (February 2026) - Enhanced Response & Custom Exceptions
 

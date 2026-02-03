@@ -25,8 +25,9 @@ import java.util.UUID;
  * </pre>
  *
  * @param <T> The type of the data object included in the response body.
- * @author Pasindu
- * @version 1.2.0
+ * @author Pasindu OG
+ * @version 1.3.0
+ * @since 1.0.0
  */
 @Getter
 @Builder
