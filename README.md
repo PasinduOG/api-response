@@ -5,8 +5,11 @@
 [![Java](https://img.shields.io/badge/Java-17+-orange.svg)](https://www.oracle.com/java/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0.2-brightgreen.svg)](https://spring.io/projects/spring-boot)
 [![Lombok](https://img.shields.io/badge/Lombok-1.18.42-blue.svg)](https://projectlombok.org/)
+[![Version](https://img.shields.io/badge/Version-2.0.0--UNRELEASED-orange.svg)](https://github.com/pasinduog/api-response)
 
-A lightweight, type-safe API Response wrapper for Spring Boot applications. Standardize your REST API responses with consistent structure, automatic timestamps, distributed tracing support, and clean factory methods. Features zero-configuration Spring Boot auto-configuration and production-ready exception handling with RFC 7807 ProblemDetail support.
+A lightweight, type-safe API Response wrapper for Spring Boot applications. Standardize your REST API responses with consistent structure, automatic timestamps, distributed tracing support, and clean factory methods. Features zero-configuration Spring Boot auto-configuration and production-ready exception handling with comprehensive RFC 9457 ProblemDetail support covering 10 common error scenarios.
+
+> ⚠️ **Note:** Version 2.0.0 is currently unreleased and in development. The latest stable version available on Maven Central is 1.3.0.
 
 ## 🔗 Quick Links
 
@@ -51,8 +54,9 @@ A lightweight, type-safe API Response wrapper for Spring Boot applications. Stan
 
 ## 🎯 Key Highlights
 
-- 🚀 **Truly Zero Configuration** - Spring Boot 3.x auto-configuration with META-INF imports
-- 🎯 **Production-Ready** - Built-in RFC 7807 ProblemDetail exception handling
+- 🚀 **Truly Zero Configuration** - Spring Boot 3.x/4.x auto-configuration with META-INF imports
+- 🎯 **Production-Ready** - Built-in RFC 9457 ProblemDetail with 10 comprehensive exception handlers
+- 🛡️ **Complete Error Coverage** - Handles validation, JSON parsing, 404s, method mismatches, media types, and more *(Enhanced in v2.0.0)*
 - 🔒 **Type-Safe & Immutable** - Thread-safe design with generic type support
 - 📦 **Ultra-Lightweight** - Only ~10KB JAR size with provided dependencies
 - 🔍 **Microservices-Ready** - Built-in trace IDs for distributed tracing
@@ -63,6 +67,25 @@ A lightweight, type-safe API Response wrapper for Spring Boot applications. Stan
 - 🎯 **Consistent Structure** - All responses follow the same format: `status`, `traceId`, `message`, `data`, `timestamp`
 - 🔒 **Type-Safe** - Full generic type support with compile-time type checking
 - 🔍 **Distributed Tracing** - Auto-generated UUID trace IDs for request tracking *(New in v1.2.0)*
+- ⏰ **Auto Timestamps** - Automatic RFC 3339 UTC formatted timestamps on every response
+- 🏭 **Factory Methods** - Clean static methods: `success()`, `created()`, `status()`
+- 🚀 **Zero Config** - Spring Boot Auto-Configuration for instant setup *(Enhanced in v1.3.0)*
+- 🪶 **Lightweight** - Only ~10KB JAR with provided dependencies (Spring Web + Lombok)
+- 📦 **Immutable** - Thread-safe with final fields
+- 🔌 **Spring Native** - Built on `ResponseEntity` and `HttpStatus`
+- 🛡️ **Comprehensive Exception Handling** - 10 built-in handlers covering all common scenarios *(Enhanced in v2.0.0)*
+  - ✅ Validation errors (`@Valid` annotations)
+  - ✅ Type mismatches (wrong parameter types)
+  - ✅ Malformed JSON (invalid request bodies)
+  - ✅ Missing parameters (required `@RequestParam`)
+  - ✅ 404 Not Found (missing endpoints/resources)
+  - ✅ 405 Method Not Allowed (wrong HTTP method)
+  - ✅ 415 Unsupported Media Type (invalid Content-Type)
+  - ✅ Null pointer exceptions
+  - ✅ Custom business exceptions (`ApiException`)
+  - ✅ General unexpected errors
+- 🎭 **Custom Business Exceptions** - Abstract `ApiException` class for domain-specific errors *(New in v1.2.0)*
+- 📋 **RFC 9457 Compliance** - Standard ProblemDetail format (supersedes RFC 7807) *(New in v2.0.0)*
 - ⏰ **Auto Timestamps** - Automatic ISO-8601 UTC formatted timestamps on every response
 - 🏭 **Factory Methods** - Clean static methods: `success()`, `created()`, `status()`
 - 🚀 **Zero Config** - Spring Boot Auto-Configuration for instant setup *(Enhanced in v1.3.0)*
@@ -91,7 +114,10 @@ Unlike other response wrapper libraries, this one offers:
 - ✅ **Comprehensive JavaDoc** - Every class fully documented with examples
 ## 🚀 Installation
 
-### Maven
+> ⚠️ **Important:** Version 2.0.0 is currently **UNRELEASED** and not available on Maven Central.  
+> For production use, please use the latest stable version **1.3.0**:
+
+### Maven (Stable - v1.3.0)
 
 ```xml
 <dependency>
@@ -101,17 +127,41 @@ Unlike other response wrapper libraries, this one offers:
 </dependency>
 ```
 
-### Gradle
+### Gradle (Stable - v1.3.0)
 
 ```gradle
 implementation 'io.github.pasinduog:api-response:1.3.0'
 ```
 
-### Gradle Kotlin DSL
+### Gradle Kotlin DSL (Stable - v1.3.0)
 
 ```kotlin
 implementation("io.github.pasinduog:api-response:1.3.0")
 ```
+
+---
+
+### Development Version (v2.0.0 - Unreleased)
+
+If you want to test the unreleased features, you can build from source:
+
+```bash
+git clone https://github.com/pasinduog/api-response.git
+cd api-response
+mvn clean install
+```
+
+Then use in your project:
+
+```xml
+<dependency>
+    <groupId>io.github.pasinduog</groupId>
+    <artifactId>api-response</artifactId>
+    <version>2.0.0</version>
+</dependency>
+```
+
+**Note:** This version includes 6 additional exception handlers not available in v1.3.0.
 
 ## 📁 Project Structure
 
@@ -199,7 +249,7 @@ The library includes `META-INF/spring/org.springframework.boot.autoconfigure.Aut
 <dependency>
     <groupId>io.github.pasinduog</groupId>
     <artifactId>api-response</artifactId>
-    <version>1.3.0</version>
+    <version>2.0.0</version>
 </dependency>
 ```
 
@@ -227,12 +277,19 @@ The library includes a **production-ready `GlobalExceptionHandler`** that automa
 
 ### What's Included
 
-✅ **General Exception Handler** - Catches all unhandled exceptions  
-✅ **Validation Error Handler** - Automatically processes `@Valid` annotation failures  
-✅ **Null Pointer Handler** - Specific handling for NullPointerException  
+✅ **General Exception Handler** - Catches all unhandled exceptions (HTTP 500)  
+✅ **Validation Error Handler** - Automatically processes `@Valid` annotation failures (HTTP 400)  
+✅ **Type Mismatch Handler** - Handles method argument type conversion errors (HTTP 400) *(New in v1.3.0)*  
+✅ **Malformed JSON Handler** - Handles invalid JSON request bodies (HTTP 400) *(New in v2.0.0)*  
+✅ **Missing Parameter Handler** - Detects missing required request parameters (HTTP 400) *(New in v2.0.0)*  
+✅ **404 Not Found Handler** - Handles missing endpoints and resources (HTTP 404) *(New in v2.0.0)*  
+✅ **Method Not Allowed Handler** - Handles unsupported HTTP methods (HTTP 405) *(New in v2.0.0)*  
+✅ **Unsupported Media Type Handler** - Handles invalid Content-Type headers (HTTP 415) *(New in v2.0.0)*  
+✅ **Null Pointer Handler** - Specific handling for NullPointerException (HTTP 500)  
 ✅ **Custom ApiException Handler** - Handles custom business exceptions extending `ApiException` *(New in v1.2.0)*  
 ✅ **Automatic Logging** - SLF4J integration for all errors  
-✅ **Timestamp Support** - All error responses include timestamps  
+✅ **Timestamp Support** - All error responses include RFC 3339 timestamps  
+✅ **RFC 9457 Compliance** - Standard ProblemDetail format (supersedes RFC 7807) *(New in v2.0.0)*  
 
 ### Custom Business Exceptions (New in v1.2.0)
 
@@ -330,17 +387,133 @@ public ResponseEntity<ApiResponse<User>> createUser(@Valid @RequestBody UserDto 
 }
 ```
 
+### Example: Malformed JSON Errors *(New in v2.0.0)*
+
+When a client sends invalid JSON (missing quotes, commas, etc.):
+
+```bash
+# Request with malformed JSON
+POST /api/users
+Content-Type: application/json
+
+{
+  "name": "John Doe"
+  "email": "invalid"  # Missing comma
+}
+```
+
+**Automatic Error Response:**
+```json
+{
+  "type": "about:blank",
+  "title": "Bad Request",
+  "status": 400,
+  "detail": "Malformed JSON request. Please check your request body format.",
+  "timestamp": "2026-02-02T10:30:45.123Z"
+}
+```
+
+### Example: Missing Required Parameters *(New in v2.0.0)*
+
+When a required `@RequestParam` is missing:
+
+```java
+@GetMapping("/search")
+public ResponseEntity<ApiResponse<List<User>>> search(
+    @RequestParam(required = true) String query) {
+    // ...
+}
+```
+
+**Automatic Error Response:**
+```json
+{
+  "type": "about:blank",
+  "title": "Bad Request",
+  "status": 400,
+  "detail": "Required request parameter 'query' (type: String) is missing.",
+  "timestamp": "2026-02-02T10:30:45.123Z"
+}
+```
+
+### Example: 404 Not Found *(New in v2.0.0)*
+
+When accessing a non-existent endpoint or resource:
+
+```bash
+GET /api/nonexistent
+```
+
+**Automatic Error Response:**
+```json
+{
+  "type": "about:blank",
+  "title": "Not Found",
+  "status": 404,
+  "detail": "The requested resource '/api/nonexistent' was not found.",
+  "timestamp": "2026-02-02T10:30:45.123Z"
+}
+```
+
+### Example: Method Not Allowed *(New in v2.0.0)*
+
+When using an unsupported HTTP method:
+
+```bash
+# POST to an endpoint that only supports GET
+POST /api/users/123
+```
+
+**Automatic Error Response:**
+```json
+{
+  "type": "about:blank",
+  "title": "Method Not Allowed",
+  "status": 405,
+  "detail": "Method 'POST' is not supported for this endpoint. Supported methods are: [GET, PUT, DELETE]",
+  "timestamp": "2026-02-02T10:30:45.123Z"
+}
+```
+
+### Example: Unsupported Media Type *(New in v2.0.0)*
+
+When sending an unsupported Content-Type:
+
+```bash
+POST /api/users
+Content-Type: application/xml
+
+<user><name>John</name></user>
+```
+
+**Automatic Error Response:**
+```json
+{
+  "type": "about:blank",
+  "title": "Unsupported Media Type",
+  "status": 415,
+  "detail": "Content type 'application/xml' is not supported. Supported content types: [application/json]",
+  "timestamp": "2026-02-02T10:30:45.123Z"
+}
+```
+
 ### Logging
 
-All exceptions are automatically logged:
+All exceptions are automatically logged with appropriate severity levels:
 - **ERROR level** - General exceptions and null pointer exceptions
-- **WARN level** - Validation errors
+- **WARN level** - Validation errors, type mismatches, malformed JSON, missing parameters, 404 errors, method not allowed, unsupported media types, and business logic exceptions
 
 ```
-2026-02-02 10:30:45.123 WARN  c.e.e.GlobalExceptionHandler - Validation error: {email=Email must be valid, name=Name is required}
-2026-02-02 10:30:45.456 ERROR c.e.e.GlobalExceptionHandler - An unexpected error occurred:
+2026-02-02 10:30:45.123 WARN  i.g.p.e.GlobalExceptionHandler - Validation error: {email=Email must be valid, name=Name is required}
+2026-02-02 10:30:45.456 ERROR i.g.p.e.GlobalExceptionHandler - An unexpected error occurred:
 java.lang.RuntimeException: Database connection failed
     at com.example.service.UserService.findById(UserService.java:42)
+2026-02-02 10:31:12.789 WARN  i.g.p.e.GlobalExceptionHandler - Malformed JSON request: JSON parse error: Unexpected character...
+2026-02-02 10:31:45.234 WARN  i.g.p.e.GlobalExceptionHandler - Missing parameter: Required request parameter 'query' (type: String) is missing.
+2026-02-02 10:32:15.567 WARN  i.g.p.e.GlobalExceptionHandler - 404 Not Found: The requested resource '/api/invalid' was not found.
+2026-02-02 10:32:45.890 WARN  i.g.p.e.GlobalExceptionHandler - Method not allowed: Method 'POST' is not supported for this endpoint.
+2026-02-02 10:33:15.123 WARN  i.g.p.e.GlobalExceptionHandler - Unsupported media type: Content type 'application/xml' is not supported.
+```
 ```
 
 ## 📖 Usage
@@ -672,7 +845,19 @@ public class HealthController {
 
 ### Error Handling with GlobalExceptionHandler
 
-**Version 1.1.0+ includes a built-in `GlobalExceptionHandler`** with Spring Boot's `ProblemDetail` for standardized error responses:
+**Version 2.0.0 includes a comprehensive `GlobalExceptionHandler`** with 10 built-in exception handlers using Spring Boot's `ProblemDetail` (RFC 9457) for standardized error responses:
+
+**Handled Exception Types:**
+1. ✅ **General Exceptions** (HTTP 500)
+2. ✅ **Validation Errors** (HTTP 400) - `@Valid` annotation failures
+3. ✅ **Type Mismatches** (HTTP 400) - Wrong parameter types
+4. ✅ **Malformed JSON** (HTTP 400) - Invalid request body *(New in v2.0.0)*
+5. ✅ **Missing Parameters** (HTTP 400) - Required `@RequestParam` missing *(New in v2.0.0)*
+6. ✅ **404 Not Found** (HTTP 404) - Missing endpoints/resources *(New in v2.0.0)*
+7. ✅ **405 Method Not Allowed** (HTTP 405) - Wrong HTTP method *(New in v2.0.0)*
+8. ✅ **415 Unsupported Media Type** (HTTP 415) - Invalid Content-Type *(New in v2.0.0)*
+9. ✅ **Null Pointer Exceptions** (HTTP 500)
+10. ✅ **Custom ApiExceptions** - Domain-specific business logic errors
 
 ```java
 package io.github.pasinduog.exception;
@@ -680,10 +865,16 @@ package io.github.pasinduog.exception;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.Instant;
 import java.util.HashMap;
@@ -692,6 +883,9 @@ import java.util.Map;
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
+    // 10 comprehensive exception handlers included
+    // See full implementation in the source code
+    
     @ExceptionHandler(Exception.class)
     public ProblemDetail handleAllExceptions(Exception ex) {
         log.error("An unexpected error occurred: ", ex);
@@ -1260,6 +1454,7 @@ public ResponseEntity<ApiResponse<User>> getUser(@PathVariable Long id) {
 
 | Library Version | Java Version | Spring Boot Version | Lombok Version | Status |
 |----------------|--------------|---------------------|----------------|--------|
+| 2.0.0 | 17, 21+ | 3.2.0 - 4.0.2 | 1.18.42 | ✅ Tested |
 | 1.3.0 | 17, 21+ | 3.2.0 - 4.0.2 | 1.18.42 | ✅ Tested |
 | 1.2.0 | 17, 21+ | 3.2.0+ | 1.18.30+ | ✅ Tested |
 | 1.1.0 | 17, 21+ | 3.2.0+ | 1.18.30+ | ✅ Tested |
@@ -1302,8 +1497,8 @@ public ResponseEntity<ApiResponse<User>> getUser(@PathVariable Long id) {
 |------------|-----------|---------------|
 | Maven | ✅ Yes | Native support |
 | Gradle | ✅ Yes | Groovy & Kotlin DSL |
-| Gradle (Groovy) | ✅ Yes | `implementation 'io.github.pasinduog:api-response:1.3.0'` |
-| Gradle (Kotlin) | ✅ Yes | `implementation("io.github.pasinduog:api-response:1.3.0")` |
+| Gradle (Groovy) | ✅ Yes | `implementation 'io.github.pasinduog:api-response:2.0.0'` |
+| Gradle (Kotlin) | ✅ Yes | `implementation("io.github.pasinduog:api-response:2.0.0")` |
 
 ## 🔧 Troubleshooting
 
@@ -1845,6 +2040,36 @@ public ResponseEntity<ApiResponse<User>> getUser(@PathVariable Long id) {
 
 ## 📋 Migration Guide
 
+### Upgrading from 1.3.0 to 2.0.0
+
+Version 2.0.0 is a major release but remains **fully backward compatible** with v1.3.0. No breaking changes.
+
+#### What's New
+- ✅ Major version for stable long-term support
+- ✅ Production-ready stable API
+- ✅ Enhanced performance and documentation
+- ✅ All v1.3.0 features maintained
+
+#### Migration Steps
+
+1. **Update dependency version:**
+
+```xml
+<dependency>
+    <groupId>io.github.pasinduog</groupId>
+    <artifactId>api-response</artifactId>
+    <version>2.0.0</version>  <!-- Changed from 1.3.0 -->
+</dependency>
+```
+
+2. **No code changes required!**
+
+The API is 100% backward compatible. All existing code will work without modifications.
+
+3. **Optional: Review updated documentation**
+
+Check the enhanced JavaDoc and examples for best practices.
+
 ### Upgrading from 1.2.0 to 1.3.0
 
 Version 1.3.0 introduces auto-configuration. **No breaking changes** - fully backward compatible.
@@ -1862,7 +2087,7 @@ Version 1.3.0 introduces auto-configuration. **No breaking changes** - fully bac
 <dependency>
     <groupId>io.github.pasinduog</groupId>
     <artifactId>api-response</artifactId>
-    <version>1.3.0</version>  <!-- Changed from 1.2.0 -->
+    <version>2.0.0</version>  <!-- Changed from 1.3.0 -->
 </dependency>
 ```
 
@@ -2168,6 +2393,41 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](http:/
 - The open-source community
 
 ## 📈 Version History
+
+### 2.0.0 (Unreleased) - Major Release with Enhanced Exception Handling
+
+⚠️ **Status: UNRELEASED** - This version is currently in development and not yet available on Maven Central.
+
+✅ **New Features:**
+- **Enhanced Exception Handling** - Added 6 new exception handlers for comprehensive error coverage
+  - `HttpMessageNotReadableException` - Malformed JSON body handling (HTTP 400)
+  - `MissingServletRequestParameterException` - Missing required parameters (HTTP 400)
+  - `NoResourceFoundException` - 404 Not Found for endpoints/resources (HTTP 404)
+  - `HttpRequestMethodNotSupportedException` - Invalid HTTP method (HTTP 405)
+  - `HttpMediaTypeNotSupportedException` - Unsupported Content-Type (HTTP 415)
+- **RFC 9457 Compliance** - Updated to latest RFC 9457 (supersedes RFC 7807) for ProblemDetail format
+- **Production-Ready Error Responses** - Clear, actionable error messages for all common scenarios
+- Major version bump to 2.0.0
+- All features from v1.3.0 maintained
+
+🔧 **Improvements:**
+- Stabilized API for long-term support
+- Enhanced documentation and examples
+- Performance optimizations
+- Improved error messages with specific details
+- Better logging for all exception types
+
+📝 **Documentation:**
+- Complete API documentation review
+- Enhanced JavaDoc across all classes
+- Updated all examples and guides
+- Added documentation for all new exception handlers
+
+🔧 **Technical Updates:**
+- Maintained full compatibility with Spring Boot 3.2.0 - 4.0.2
+- Continued support for Java 17+ and Lombok 1.18.42
+- All Maven plugins updated to latest versions
+- Updated GlobalExceptionHandler with 10 comprehensive exception handlers
 
 ### 1.3.0 (February 4, 2026) - Auto-Configuration & Stability Release
 

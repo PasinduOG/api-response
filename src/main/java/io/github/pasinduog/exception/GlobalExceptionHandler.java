@@ -3,11 +3,16 @@ package io.github.pasinduog.exception;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.Instant;
 import java.util.HashMap;
@@ -17,7 +22,7 @@ import java.util.Map;
  * Global Exception Handler for the application.
  * <p>
  * This class intercepts exceptions thrown by any controller across the application
- * and transforms them into a standard {@link ProblemDetail} format (RFC 7807).
+ * and transforms them into a standard {@link ProblemDetail} format (RFC 9457 / 7807).
  * This ensures a consistent error response structure for API clients.
  * </p>
  * <p>
@@ -26,16 +31,21 @@ import java.util.Map;
  * </p>
  * <h2>Handled Exception Types:</h2>
  * <ul>
- *   <li>{@link Exception} - Catch-all for unexpected errors (HTTP 500)</li>
- *   <li>{@link MethodArgumentNotValidException} - Bean validation failures (HTTP 400)</li>
- *   <li>{@link MethodArgumentTypeMismatchException} - Type conversion errors (HTTP 400)</li>
- *   <li>{@link NullPointerException} - Null pointer errors (HTTP 500)</li>
- *   <li>{@link ApiException} - Custom business logic exceptions (custom HTTP status)</li>
+ * <li>{@link Exception} - Catch-all for unexpected errors (HTTP 500)</li>
+ * <li>{@link MethodArgumentNotValidException} - Bean validation failures (HTTP 400)</li>
+ * <li>{@link MethodArgumentTypeMismatchException} - Type conversion errors (HTTP 400)</li>
+ * <li>{@link HttpMessageNotReadableException} - Malformed JSON body (HTTP 400)</li>
+ * <li>{@link MissingServletRequestParameterException} - Missing required parameters (HTTP 400)</li>
+ * <li>{@link NoResourceFoundException} - 404 Not Found for endpoints/resources (HTTP 404)</li>
+ * <li>{@link HttpRequestMethodNotSupportedException} - Invalid HTTP method (HTTP 405)</li>
+ * <li>{@link HttpMediaTypeNotSupportedException} - Unsupported Content-Type (HTTP 415)</li>
+ * <li>{@link NullPointerException} - Null pointer errors (HTTP 500)</li>
+ * <li>{@link ApiException} - Custom business logic exceptions (custom HTTP status)</li>
  * </ul>
  *
  * @author Pasindu OG
- * @version 1.3.0
- * @since 1.1.0
+ * @version 2.0.0
+ * @since 1.2.0
  * @see ProblemDetail
  * @see ApiException
  */
@@ -101,11 +111,109 @@ public class GlobalExceptionHandler {
      * @return A {@link ProblemDetail} with HTTP 400 status and a descriptive error message.
      */
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ProblemDetail handleMethodArgumentTypeMismatchException(org.springframework.web.method.annotation.MethodArgumentTypeMismatchException ex) {
+    public ProblemDetail handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException ex) {
         String errorMessage = String.format("Invalid value '%s' for parameter '%s'. Expected type: %s.",
                 ex.getValue(), ex.getName(), ex.getRequiredType() != null ? ex.getRequiredType().getSimpleName() : "unknown");
         log.warn("Type mismatch error: {}", errorMessage);
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, errorMessage);
+        problemDetail.setProperty("timestamp", Instant.now());
+        return problemDetail;
+    }
+
+    /**
+     * Handles malformed JSON errors.
+     * <p>
+     * Triggered when the request body is invalid JSON (e.g., missing commas, brackets, or wrong types).
+     * </p>
+     *
+     * @param ex The exception thrown when JSON parsing fails.
+     * @return A {@link ProblemDetail} with HTTP 400 status.
+     */
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ProblemDetail handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
+        log.warn("Malformed JSON request: {}", ex.getMessage());
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Malformed JSON request. Please check your request body format.");
+        problemDetail.setProperty("timestamp", Instant.now());
+        return problemDetail;
+    }
+
+    /**
+     * Handles missing required parameters.
+     * <p>
+     * Triggered when a required @RequestParam is missing from the request URL.
+     * </p>
+     *
+     * @param ex The exception containing the missing parameter name.
+     * @return A {@link ProblemDetail} with HTTP 400 status.
+     */
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ProblemDetail handleMissingServletRequestParameterException(MissingServletRequestParameterException ex) {
+        String message = String.format("Required request parameter '%s' (type: %s) is missing.",
+                ex.getParameterName(), ex.getParameterType());
+        log.warn("Missing parameter: {}", message);
+
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, message);
+        problemDetail.setProperty("timestamp", Instant.now());
+        return problemDetail;
+    }
+
+    /**
+     * Handles 404 Not Found errors for static resources and missing endpoints (Spring Boot 3.2+).
+     * <p>
+     * This eliminates the need for configuring `spring.mvc.throw-exception-if-no-handler-found`.
+     * It catches the exception thrown when no controller or static resource is found.
+     * </p>
+     *
+     * @param ex The exception containing the requested resource path.
+     * @return A {@link ProblemDetail} with HTTP 404 status.
+     */
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ProblemDetail handleNoResourceFoundException(NoResourceFoundException ex) {
+        String message = String.format("The requested resource '/%s' was not found.", ex.getResourcePath());
+        log.warn("404 Not Found: {}", message);
+
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, message);
+        problemDetail.setProperty("timestamp", Instant.now());
+        return problemDetail;
+    }
+
+    /**
+     * Handles unsupported HTTP methods (405).
+     * <p>
+     * Triggered when a user sends a request with a method (e.g., POST) that is not supported
+     * by the endpoint (e.g., it only expects GET).
+     * </p>
+     *
+     * @param ex The exception containing the supported methods.
+     * @return A {@link ProblemDetail} with HTTP 405 status.
+     */
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ProblemDetail handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException ex) {
+        String message = String.format("Method '%s' is not supported for this endpoint. Supported methods are: %s",
+                ex.getMethod(), ex.getSupportedHttpMethods());
+        log.warn("Method not allowed: {}", message);
+
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.METHOD_NOT_ALLOWED, message);
+        problemDetail.setProperty("timestamp", Instant.now());
+        return problemDetail;
+    }
+
+    /**
+     * Handles unsupported media types (415).
+     * <p>
+     * Triggered when the client sends a Content-Type (e.g., application/xml) that the server cannot process.
+     * </p>
+     *
+     * @param ex The exception containing the supported media types.
+     * @return A {@link ProblemDetail} with HTTP 415 status.
+     */
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public ProblemDetail handleHttpMediaTypeNotSupportedException(HttpMediaTypeNotSupportedException ex) {
+        String message = String.format("Content type '%s' is not supported. Supported content types: %s",
+                ex.getContentType(), ex.getSupportedMediaTypes());
+        log.warn("Unsupported media type: {}", message);
+
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.UNSUPPORTED_MEDIA_TYPE, message);
         problemDetail.setProperty("timestamp", Instant.now());
         return problemDetail;
     }

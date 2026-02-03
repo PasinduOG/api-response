@@ -35,7 +35,7 @@ import org.springframework.context.annotation.Configuration;
  * </pre>
  *
  * @author Pasindu OG
- * @version 1.3.0
+ * @version 2.0.0
  * @since 1.3.0
  * @see GlobalExceptionHandler
  */
