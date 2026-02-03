@@ -5,9 +5,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * Auto-configuration class for the API Response Library.
+ * Autoconfiguration class for the API Response Library.
  * <p>
- * This configuration is automatically loaded by Spring Boot's auto-configuration mechanism
+ * This configuration is automatically loaded by Spring Boot's autoconfiguration mechanism
  * when the library is present on the classpath. It registers essential beans required for
  * the library to function properly, including the global exception handler.
  * </p>
@@ -21,7 +21,7 @@ import org.springframework.context.annotation.Configuration;
  * </ul>
  * <h2>Disabling Auto-Configuration:</h2>
  * <p>
- * If you need to disable this auto-configuration, you can exclude it in your main application class:
+ * If you need to disable this autoconfiguration, you can exclude it in your main application class:
  * </p>
  * <pre>
  * {@code

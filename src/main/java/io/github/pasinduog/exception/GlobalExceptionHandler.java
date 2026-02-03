@@ -21,7 +21,7 @@ import java.util.Map;
  * This ensures a consistent error response structure for API clients.
  * </p>
  * <p>
- * <b>Automatically registered</b> via Spring Boot auto-configuration when the library
+ * <b>Automatically registered</b> via Spring Boot autoconfiguration when the library
  * is on the classpath. No manual configuration required.
  * </p>
  * <h2>Handled Exception Types:</h2>
