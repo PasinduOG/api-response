@@ -72,6 +72,28 @@ public class ApiResponse<T> {
     private final Instant timestamp = Instant.now();
 
     /**
+     * Constructs an ApiResponse with all parameters.
+     * <p>
+     * This constructor is used internally by Lombok's {@code @Builder} annotation.
+     * It is recommended to use static factory methods like {@link #success(String, Object)},
+     * {@link #created(String, Object)}, or the builder pattern instead of calling this directly.
+     * </p>
+     *
+     * @param status The HTTP status code.
+     * @param traceId The unique trace identifier for this request.
+     * @param message A descriptive message about the result.
+     * @param data The response payload data.
+     * @param timestamp The timestamp when the response was created.
+     */
+    public ApiResponse(Integer status, UUID traceId, String message, T data, Instant timestamp) {
+        this.status = status;
+        this.traceId = traceId;
+        this.message = message;
+        this.data = data;
+        this.timestamp = timestamp;
+    }
+
+    /**
      * Creates a response with HTTP 201 Created status.
      * <p>
      * This is typically used for POST requests where a new resource has been successfully created.

@@ -55,6 +55,17 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
     /**
+     * Default constructor for GlobalExceptionHandler.
+     * <p>
+     * This constructor is automatically invoked by Spring when the handler is
+     * registered as a bean via {@link io.github.pasinduog.config.ApiResponseAutoConfiguration}.
+     * </p>
+     */
+    public GlobalExceptionHandler() {
+        // Default constructor for Spring bean instantiation
+    }
+
+    /**
      * Handles all unexpected exceptions (catch-all handler).
      * <p>
      * This method acts as a safety net for any error not explicitly handled by other methods.

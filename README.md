@@ -73,6 +73,8 @@ A lightweight, type-safe API Response wrapper for Spring Boot applications. Stan
 - 🪶 **Lightweight** - Only ~10KB JAR with provided dependencies (Spring Web + Lombok)
 - 📦 **Immutable** - Thread-safe with final fields
 - 🔌 **Spring Native** - Built on `ResponseEntity` and `HttpStatus`
+- 📋 **RFC 9457 Compliance** - Standard ProblemDetail format (supersedes RFC 7807) *(New in v2.0.0)*
+- 📚 **Complete JavaDoc** - Every class fully documented with explicit constructor documentation
 - 🛡️ **Comprehensive Exception Handling** - 10 built-in handlers covering all common scenarios *(Enhanced in v2.0.0)*
   - ✅ Validation errors (`@Valid` annotations)
   - ✅ Type mismatches (wrong parameter types)
@@ -84,15 +86,6 @@ A lightweight, type-safe API Response wrapper for Spring Boot applications. Stan
   - ✅ Null pointer exceptions
   - ✅ Custom business exceptions (`ApiException`)
   - ✅ General unexpected errors
-- 🎭 **Custom Business Exceptions** - Abstract `ApiException` class for domain-specific errors *(New in v1.2.0)*
-- 📋 **RFC 9457 Compliance** - Standard ProblemDetail format (supersedes RFC 7807) *(New in v2.0.0)*
-- ⏰ **Auto Timestamps** - Automatic ISO-8601 UTC formatted timestamps on every response
-- 🏭 **Factory Methods** - Clean static methods: `success()`, `created()`, `status()`
-- 🚀 **Zero Config** - Spring Boot Auto-Configuration for instant setup *(Enhanced in v1.3.0)*
-- 🪶 **Lightweight** - Only ~10KB JAR with provided dependencies (Spring Web + Lombok)
-- 📦 **Immutable** - Thread-safe with final fields
-- 🔌 **Spring Native** - Built on `ResponseEntity` and `HttpStatus`
-- 🛡️ **Global Exception Handler** - Built-in ProblemDetail RFC 7807 error handling
 - 🎭 **Custom Business Exceptions** - Abstract `ApiException` class for domain-specific errors *(New in v1.2.0)*
 - ✅ **Validation Support** - Automatic `@Valid` annotation error handling
 
@@ -106,12 +99,13 @@ A lightweight, type-safe API Response wrapper for Spring Boot applications. Stan
 
 Unlike other response wrapper libraries, this one offers:
 
-- ✅ **Native Spring Boot 3.x Auto-Configuration** - No manual setup required
-- ✅ **RFC 7807 ProblemDetail Support** - Industry-standard error responses
+- ✅ **Native Spring Boot 3.x/4.x Auto-Configuration** - No manual setup required
+- ✅ **RFC 9457 ProblemDetail Support** - Industry-standard error responses (latest RFC)
 - ✅ **Provided Dependencies** - Won't conflict with your application's versions
 - ✅ **Extensible Exception Handling** - Create custom business exceptions easily
 - ✅ **Trace ID Support** - Built-in distributed tracing capabilities
-- ✅ **Comprehensive JavaDoc** - Every class fully documented with examples
+- ✅ **Comprehensive JavaDoc** - Every class fully documented with explicit constructor documentation and zero warnings
+- ✅ **Production-Grade Quality** - Clean builds, proper documentation, and battle-tested code
 ## 🚀 Installation
 
 > ⚠️ **Important:** Version 2.0.0 is currently **UNRELEASED** and not available on Maven Central.  
@@ -2337,12 +2331,17 @@ cd api-response
 # Build the project
 mvn clean install
 
-# Generate JavaDoc
+# Generate JavaDoc (builds with zero warnings)
 mvn javadoc:javadoc
+
+# Generate JavaDoc JAR (clean build with explicit constructor documentation)
+mvn javadoc:jar
 
 # Package for Maven Central (requires GPG key)
 mvn clean deploy -P release
 ```
+
+**Note:** The project now includes explicit constructor documentation for all classes, ensuring zero Javadoc warnings during the build process. All constructors (including Lombok-generated and Spring bean constructors) are properly documented.
 
 ### Project Structure for Contributors
 
@@ -2416,18 +2415,23 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](http:/
 - Performance optimizations
 - Improved error messages with specific details
 - Better logging for all exception types
+- **Fixed Javadoc Warnings** - Added explicit constructor documentation to all classes
+- **Clean Javadoc Generation** - Zero warnings during Maven javadoc:jar execution
 
 📝 **Documentation:**
 - Complete API documentation review
-- Enhanced JavaDoc across all classes
+- Enhanced JavaDoc across all classes with explicit constructor documentation
 - Updated all examples and guides
 - Added documentation for all new exception handlers
+- **Added comprehensive constructor Javadoc comments** for Lombok-generated constructors and Spring beans
+- Improved class-level and method-level documentation
 
 🔧 **Technical Updates:**
 - Maintained full compatibility with Spring Boot 3.2.0 - 4.0.2
 - Continued support for Java 17+ and Lombok 1.18.42
 - All Maven plugins updated to latest versions
 - Updated GlobalExceptionHandler with 10 comprehensive exception handlers
+- **Javadoc Build Quality** - Clean build with no constructor documentation warnings
 
 ### 1.3.0 (February 4, 2026) - Auto-Configuration & Stability Release
 
