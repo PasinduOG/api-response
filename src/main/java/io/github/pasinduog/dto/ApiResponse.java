@@ -71,6 +71,7 @@ public class ApiResponse<T> {
     @Builder.Default
     private final Instant timestamp = Instant.now();
 
+
     /**
      * Creates a response with HTTP 201 Created status.
      * <p>

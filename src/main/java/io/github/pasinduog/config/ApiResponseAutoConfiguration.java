@@ -44,6 +44,17 @@ import org.springframework.context.annotation.Configuration;
 public class ApiResponseAutoConfiguration {
 
     /**
+     * Default constructor for ApiResponseAutoConfiguration.
+     * <p>
+     * This constructor is automatically invoked by Spring's dependency injection
+     * container during application startup when autoconfiguration is enabled.
+     * </p>
+     */
+    public ApiResponseAutoConfiguration() {
+        // Default constructor for Spring autoconfiguration
+    }
+
+    /**
      * Registers the {@link GlobalExceptionHandler} as a Spring bean.
      * <p>
      * The handler provides centralized exception management using Spring's
