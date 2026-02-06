@@ -523,6 +523,21 @@ The library provides **production-ready distributed tracing** with automatic tra
 ✅ **Flexible Priority** - Supports explicit trace IDs, MDC context, or auto-generation  
 ✅ **Thread-Safe** - Proper MDC cleanup prevents memory leaks  
 ✅ **Zero Configuration** - Works out of the box with sensible defaults  
+✅ **UUID Format** - Standard 128-bit globally unique identifiers  
+
+### Industry Standards Compatibility
+
+The trace ID implementation uses **UUID format** (128-bit), which is:
+- ✅ Widely supported across distributed systems
+- ✅ Compatible with most logging and APM tools
+- ✅ Globally unique without coordination
+
+**For enhanced interoperability**, consider implementing header propagation to support:
+- `X-Trace-Id` / `X-Request-ID` (Common custom headers)
+- `X-B3-TraceId` (Zipkin/B3 format)
+- `traceparent` (W3C Trace Context standard)
+
+See the [Enhanced TraceIdFilter](#enhanced-traceidfilter-with-header-propagation) section below for implementation details.
 
 ### How It Works
 
@@ -806,6 +821,139 @@ class UserControllerIntegrationTest {
 4. **Error Investigation** - Quickly find all logs related to a failed request
 5. **Distributed Systems** - Essential for microservices architecture
 6. **Production Ready** - No memory leaks with automatic MDC cleanup
+
+### Enhanced TraceIdFilter with Header Propagation
+
+For better interoperability with industry-standard distributed tracing systems, you can extend `TraceIdFilter` to support incoming trace ID headers and add trace IDs to response headers:
+
+```java
+package io.github.pasinduog.filter;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.MDC;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import java.io.IOException;
+import java.util.UUID;
+
+/**
+ * Enhanced TraceIdFilter with industry-standard header support.
+ * Supports incoming trace IDs from common headers and propagates to response.
+ */
+public class EnhancedTraceIdFilter extends OncePerRequestFilter {
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, 
+                                    HttpServletResponse response, 
+                                    FilterChain filterChain) throws ServletException, IOException {
+        UUID traceId = extractOrGenerateTraceId(request);
+        
+        try {
+            request.setAttribute("traceId", traceId);
+            MDC.put("traceId", traceId.toString());
+            
+            // Add trace ID to response header for downstream services
+            response.setHeader("X-Trace-Id", traceId.toString());
+            
+            filterChain.doFilter(request, response);
+        } finally {
+            MDC.clear();
+        }
+    }
+    
+    /**
+     * Extracts trace ID from standard headers or generates a new one.
+     * Checks headers in order of priority:
+     * 1. X-Trace-Id (custom)
+     * 2. X-Request-ID (common)
+     * 3. X-B3-TraceId (Zipkin)
+     * 4. traceparent (W3C Trace Context)
+     */
+    private UUID extractOrGenerateTraceId(HttpServletRequest request) {
+        // Check X-Trace-Id header
+        String traceId = request.getHeader("X-Trace-Id");
+        
+        // Check X-Request-ID header
+        if (traceId == null) {
+            traceId = request.getHeader("X-Request-ID");
+        }
+        
+        // Check X-B3-TraceId header (Zipkin format)
+        if (traceId == null) {
+            traceId = request.getHeader("X-B3-TraceId");
+        }
+        
+        // Check W3C traceparent header
+        if (traceId == null) {
+            String traceparent = request.getHeader("traceparent");
+            if (traceparent != null) {
+                // Format: 00-{trace-id}-{span-id}-{flags}
+                String[] parts = traceparent.split("-");
+                if (parts.length >= 2) {
+                    traceId = parts[1]; // Extract trace-id
+                }
+            }
+        }
+        
+        // Try to parse as UUID, or generate new one
+        if (traceId != null) {
+            try {
+                return UUID.fromString(traceId);
+            } catch (IllegalArgumentException e) {
+                // Invalid UUID format, generate new one
+            }
+        }
+        
+        return UUID.randomUUID();
+    }
+}
+```
+
+**Register the Enhanced Filter:**
+
+```java
+@Configuration
+public class FilterConfig {
+
+    @Bean
+    public FilterRegistrationBean<EnhancedTraceIdFilter> traceIdFilter() {
+        FilterRegistrationBean<EnhancedTraceIdFilter> registration = new FilterRegistrationBean<>();
+        registration.setFilter(new EnhancedTraceIdFilter());
+        registration.addUrlPatterns("/*");
+        registration.setOrder(Ordered.HIGHEST_PRECEDENCE);
+        return registration;
+    }
+}
+```
+
+**Benefits of Enhanced Filter:**
+- ✅ Accepts trace IDs from upstream services (API Gateway, Load Balancer)
+- ✅ Supports multiple industry-standard header formats
+- ✅ Adds trace ID to response headers for downstream services
+- ✅ Maintains compatibility with W3C, Zipkin, and custom formats
+- ✅ Graceful fallback to UUID generation
+
+**Testing with cURL:**
+```bash
+# Send request with trace ID
+curl -H "X-Trace-Id: 12345678-1234-1234-1234-123456789012" \
+     http://localhost:8080/api/users/1
+
+# Check response header
+HTTP/1.1 200 OK
+X-Trace-Id: 12345678-1234-1234-1234-123456789012
+
+# Response body includes same trace ID
+{
+  "status": 200,
+  "traceId": "12345678-1234-1234-1234-123456789012",
+  "message": "User found",
+  "content": {...}
+}
+```
 
 ## 📖 Usage
 
@@ -1998,7 +2146,7 @@ Every response includes an auto-generated UUID `traceId` for request tracking. F
 **Quick Example with TraceIdFilter:**
 
 ```java
-// 1. Register TraceIdFilter
+// 1. Register TraceIdFilter (basic version)
 @Configuration
 public class FilterConfig {
     @Bean
@@ -2020,6 +2168,14 @@ public class UserService {
         // ... business logic
         return user;
     }
+}
+```
+
+**For industry-standard header propagation** (accepting trace IDs from upstream services), use the **[Enhanced TraceIdFilter](#enhanced-traceidfilter-with-header-propagation)** which supports:
+- `X-Trace-Id` and `X-Request-ID` headers
+- `X-B3-TraceId` (Zipkin format)
+- `traceparent` (W3C Trace Context)
+- Automatic response header injection
 }
 ```
 
