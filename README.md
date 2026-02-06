@@ -7,7 +7,7 @@
 [![Lombok](https://img.shields.io/badge/Lombok-1.18.42-blue.svg)](https://projectlombok.org/)
 [![Version](https://img.shields.io/badge/Version-2.0.0--UNRELEASED-orange.svg)](https://github.com/pasinduog/api-response)
 
-A lightweight, type-safe API Response wrapper for Spring Boot applications. Standardize your REST API responses with consistent structure, automatic timestamps, distributed tracing support, and clean factory methods. Features zero-configuration Spring Boot auto-configuration and production-ready exception handling with comprehensive RFC 9457 ProblemDetail support covering 10 common error scenarios.
+A lightweight, type-safe API Response wrapper for Spring Boot applications. Standardize your REST API responses with consistent structure, automatic timestamps, distributed tracing support, built-in pagination, and clean factory methods. Features zero-configuration Spring Boot auto-configuration and production-ready exception handling with comprehensive RFC 9457 ProblemDetail support covering 10 common error scenarios.
 
 > ⚠️ **Note:** Version 2.0.0 is currently unreleased and in development. The latest stable version available on Maven Central is 1.3.0.
 
@@ -56,11 +56,12 @@ A lightweight, type-safe API Response wrapper for Spring Boot applications. Stan
 
 - 🚀 **Truly Zero Configuration** - Spring Boot 3.x/4.x auto-configuration with META-INF imports
 - 🎯 **Production-Ready** - Built-in RFC 9457 ProblemDetail with 10 comprehensive exception handlers
-- 🛡️ **Complete Error Coverage** - Handles validation, JSON parsing, 404s, method mismatches, media types, and more *(Enhanced in v2.0.0)*
+- 🛡️ **Complete Error Coverage** - Handles validation, JSON parsing, 404s, method mismatches, media types, and more *(New in v2.0.0)*
 - 🔒 **Type-Safe & Immutable** - Thread-safe design with generic type support
 - 📦 **Ultra-Lightweight** - Only ~10KB JAR size with provided dependencies
 - 🔍 **Microservices-Ready** - Built-in trace IDs for distributed tracing
 - ✅ **Battle-Tested** - Used in production Spring Boot applications
+- 📋 **Clean Javadoc** - Zero warnings with explicit constructor documentation *(New in v2.0.0)*
 
 ## ✨ Features
 
@@ -73,8 +74,8 @@ A lightweight, type-safe API Response wrapper for Spring Boot applications. Stan
 - 🪶 **Lightweight** - Only ~10KB JAR with provided dependencies (Spring Web + Lombok)
 - 📦 **Immutable** - Thread-safe with final fields
 - 🔌 **Spring Native** - Built on `ResponseEntity` and `HttpStatus`
-- 📋 **RFC 9457 Compliance** - Standard ProblemDetail format (supersedes RFC 7807) *(New in v2.0.0)*
-- 📚 **Complete JavaDoc** - Every class fully documented with explicit constructor documentation
+- 📋 **RFC 9457 Compliance** - Standard ProblemDetail format (supersedes RFC 7807) *(Updated in v2.0.0)*
+- 📚 **Complete JavaDoc** - Every class fully documented with explicit constructor documentation *(New in v2.0.0)*
 - 🛡️ **Comprehensive Exception Handling** - 10 built-in handlers covering all common scenarios *(Enhanced in v2.0.0)*
   - ✅ Validation errors (`@Valid` annotations)
   - ✅ Type mismatches (wrong parameter types)
@@ -2406,7 +2407,8 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](http:/
   - `HttpMediaTypeNotSupportedException` - Unsupported Content-Type (HTTP 415)
 - **RFC 9457 Compliance** - Updated to latest RFC 9457 (supersedes RFC 7807) for ProblemDetail format
 - **Production-Ready Error Responses** - Clear, actionable error messages for all common scenarios
-- Major version bump to 2.0.0
+- **Clean Javadoc Build** - Zero warnings with explicit constructor documentation for all classes
+- Major version bump to 2.0.0 for stable long-term support
 - All features from v1.3.0 maintained
 
 🔧 **Improvements:**
