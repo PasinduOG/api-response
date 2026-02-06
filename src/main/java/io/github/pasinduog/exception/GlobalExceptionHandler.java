@@ -111,7 +111,12 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(Exception.class)
     public ProblemDetail handleAllExceptions(Exception ex) {
-        log.error("An unexpected error occurred: ", ex);
+        StackTraceElement rootCause = ex.getStackTrace().length > 0 ? ex.getStackTrace()[0] : null;
+        String className = (rootCause != null) ? rootCause.getClassName() : "Unknown Class";
+        int lineNumber = (rootCause != null) ? rootCause.getLineNumber() : -1;
+        String traceId = MDC.get("traceId") != null ? MDC.get("traceId") : "N/A";
+        log.error("[TraceID: {}] Error in {}:{} - Message: {}",
+                traceId, className, lineNumber, ex.getMessage());
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error. Please contact technical support");
         problemDetail.setProperty("traceId", MDC.get("traceId") != null ? MDC.get("traceId") : UUID.randomUUID());
         problemDetail.setProperty("timestamp", Instant.now());
