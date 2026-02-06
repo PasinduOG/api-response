@@ -35,7 +35,6 @@ A lightweight, type-safe API Response wrapper for Spring Boot applications. Stan
 - [Usage](#-usage)
 - [Real-World Examples](#-real-world-examples)
 - [API Reference](#-api-reference)
-- [Pagination Support](#-pagination-support-new-in-v200)
 - [Response Structure](#-response-structure)
 - [Best Practices](#-best-practices)
 - [Testing](#-testing)
@@ -57,17 +56,16 @@ A lightweight, type-safe API Response wrapper for Spring Boot applications. Stan
 
 - 🚀 **Truly Zero Configuration** - Spring Boot 3.x/4.x auto-configuration with META-INF imports
 - 🎯 **Production-Ready** - Built-in RFC 9457 ProblemDetail with 10 comprehensive exception handlers
-- 📄 **Pagination Built-in** - Standardized pagination with both in-memory and database support *(New in v2.0.0)*
-- 🛡️ **Complete Error Coverage** - Handles validation, JSON parsing, 404s, method mismatches, media types, and more *(Enhanced in v2.0.0)*
+- 🛡️ **Complete Error Coverage** - Handles validation, JSON parsing, 404s, method mismatches, media types, and more *(New in v2.0.0)*
 - 🔒 **Type-Safe & Immutable** - Thread-safe design with generic type support
 - 📦 **Ultra-Lightweight** - Only ~10KB JAR size with provided dependencies
 - 🔍 **Microservices-Ready** - Built-in trace IDs for distributed tracing
 - ✅ **Battle-Tested** - Used in production Spring Boot applications
+- 📋 **Clean Javadoc** - Zero warnings with explicit constructor documentation *(New in v2.0.0)*
 
 ## ✨ Features
 
 - 🎯 **Consistent Structure** - All responses follow the same format: `status`, `traceId`, `message`, `data`, `timestamp`
-- 📄 **Pagination Support** - Built-in `PagedApiResponse` for standardized pagination (in-memory & database) *(New in v2.0.0)*
 - 🔒 **Type-Safe** - Full generic type support with compile-time type checking
 - 🔍 **Distributed Tracing** - Auto-generated UUID trace IDs for request tracking *(New in v1.2.0)*
 - ⏰ **Auto Timestamps** - Automatic RFC 3339 UTC formatted timestamps on every response
@@ -76,8 +74,8 @@ A lightweight, type-safe API Response wrapper for Spring Boot applications. Stan
 - 🪶 **Lightweight** - Only ~10KB JAR with provided dependencies (Spring Web + Lombok)
 - 📦 **Immutable** - Thread-safe with final fields
 - 🔌 **Spring Native** - Built on `ResponseEntity` and `HttpStatus`
-- 📋 **RFC 9457 Compliance** - Standard ProblemDetail format (supersedes RFC 7807) *(New in v2.0.0)*
-- 📚 **Complete JavaDoc** - Every class fully documented with explicit constructor documentation
+- 📋 **RFC 9457 Compliance** - Standard ProblemDetail format (supersedes RFC 7807) *(Updated in v2.0.0)*
+- 📚 **Complete JavaDoc** - Every class fully documented with explicit constructor documentation *(New in v2.0.0)*
 - 🛡️ **Comprehensive Exception Handling** - 10 built-in handlers covering all common scenarios *(Enhanced in v2.0.0)*
   - ✅ Validation errors (`@Valid` annotations)
   - ✅ Type mismatches (wrong parameter types)
@@ -2401,12 +2399,6 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](http:/
 ⚠️ **Status: UNRELEASED** - This version is currently in development and not yet available on Maven Central.
 
 ✅ **New Features:**
-- **Pagination Support** - New `PagedApiResponse<T>` record for standardized pagination
-  - In-memory pagination with automatic list slicing
-  - Database pagination support (JPA/JDBC)
-  - Null-safe with automatic defaults (page=1, size=10)
-  - Thread-safe immutable record type
-  - Support for large datasets with minimal memory footprint
 - **Enhanced Exception Handling** - Added 6 new exception handlers for comprehensive error coverage
   - `HttpMessageNotReadableException` - Malformed JSON body handling (HTTP 400)
   - `MissingServletRequestParameterException` - Missing required parameters (HTTP 400)
@@ -2415,7 +2407,8 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](http:/
   - `HttpMediaTypeNotSupportedException` - Unsupported Content-Type (HTTP 415)
 - **RFC 9457 Compliance** - Updated to latest RFC 9457 (supersedes RFC 7807) for ProblemDetail format
 - **Production-Ready Error Responses** - Clear, actionable error messages for all common scenarios
-- Major version bump to 2.0.0
+- **Clean Javadoc Build** - Zero warnings with explicit constructor documentation for all classes
+- Major version bump to 2.0.0 for stable long-term support
 - All features from v1.3.0 maintained
 
 🔧 **Improvements:**
