@@ -141,8 +141,9 @@ public class ApiResponse<T> {
      * <p>
      * This is typically used for POST requests where a new resource has been successfully created.
      * </p>
-     *
-     * <h3>Example Usage:</h3>
+     * <p>
+     * Example usage:
+     * </p>
      * <pre>
      * {@code
      * @PostMapping("/users")
@@ -173,8 +174,9 @@ public class ApiResponse<T> {
      * Useful for operations like DELETE or PUT where the action is successful but there is no
      * specific content to return.
      * </p>
-     *
-     * <h3>Example Usage:</h3>
+     * <p>
+     * Example usage:
+     * </p>
      * <pre>
      * {@code
      * @DeleteMapping("/users/{id}")
@@ -201,8 +203,9 @@ public class ApiResponse<T> {
      * <p>
      * This is the most common method used for GET requests to return requested content.
      * </p>
-     *
-     * <h3>Example Usage:</h3>
+     * <p>
+     * Example usage:
+     * </p>
      * <pre>
      * {@code
      * @GetMapping("/users/{id}")
@@ -238,8 +241,9 @@ public class ApiResponse<T> {
      * <p>
      * Useful for error handling or specific status codes not covered by standard success methods.
      * </p>
-     *
-     * <h3>Example Usage:</h3>
+     * <p>
+     * Example usage:
+     * </p>
      * <pre>
      * {@code
      * @PostMapping("/process")
@@ -268,8 +272,9 @@ public class ApiResponse<T> {
      * <p>
      * Provides maximum flexibility for custom response scenarios with any HTTP status code.
      * </p>
-     *
-     * <h3>Example Usage:</h3>
+     * <p>
+     * Example usage:
+     * </p>
      * <pre>
      * {@code
      * @PutMapping("/users/{id}")
