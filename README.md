@@ -65,9 +65,9 @@ A lightweight, type-safe API Response wrapper for Spring Boot applications. Stan
 
 ## ✨ Features
 
-- 🎯 **Consistent Structure** - All responses follow the same format: `status`, `traceId`, `message`, `data`, `timestamp`
+- 🎯 **Consistent Structure** - All responses follow the same format: `status`, `traceId`, `message`, `content`, `timestamp`
 - 🔒 **Type-Safe** - Full generic type support with compile-time type checking
-- 🔍 **Distributed Tracing** - Auto-generated UUID trace IDs for request tracking *(New in v1.2.0)*
+- 🔍 **Distributed Tracing** - Auto-generated UUID trace IDs with MDC integration for request tracking *(Enhanced in v2.0.0)*
 - ⏰ **Auto Timestamps** - Automatic RFC 3339 UTC formatted timestamps on every response
 - 🏭 **Factory Methods** - Clean static methods: `success()`, `created()`, `status()`
 - 🚀 **Zero Config** - Spring Boot Auto-Configuration for instant setup *(Enhanced in v1.3.0)*
@@ -213,12 +213,12 @@ public class UserController {
   "status": 200,
   "traceId": "550e8400-e29b-41d4-a716-446655440000",
   "message": "User retrieved successfully",
-  "data": {
+  "content": {
     "id": 1,
     "name": "John Doe",
     "email": "john@example.com"
   },
-  "timestamp": "2026-02-01T10:30:45.123Z"
+  "timestamp": "2026-02-06T10:30:45.123Z"
 }
 ```
 
@@ -510,6 +510,302 @@ java.lang.RuntimeException: Database connection failed
 2026-02-02 10:33:15.123 WARN  i.g.p.e.GlobalExceptionHandler - Unsupported media type: Content type 'application/xml' is not supported.
 ```
 ```
+
+## 🔍 Distributed Tracing (Enhanced in v2.0.0)
+
+The library provides **production-ready distributed tracing** with automatic trace ID generation and MDC (Mapped Diagnostic Context) integration for seamless log correlation across your microservices architecture.
+
+### Key Features
+
+✅ **Automatic Trace ID Generation** - Every response includes a unique UUID for request tracking  
+✅ **MDC Integration** - Trace IDs automatically available in all log statements via SLF4J MDC  
+✅ **TraceIdFilter** - Optional servlet filter for consistent trace ID management *(New in v2.0.0)*  
+✅ **Flexible Priority** - Supports explicit trace IDs, MDC context, or auto-generation  
+✅ **Thread-Safe** - Proper MDC cleanup prevents memory leaks  
+✅ **Zero Configuration** - Works out of the box with sensible defaults  
+
+### How It Works
+
+#### Default Behavior (Without Filter)
+
+By default, `ApiResponse` automatically generates a trace ID for each response:
+
+```java
+@GetMapping("/{id}")
+public ResponseEntity<ApiResponse<User>> getUser(@PathVariable Long id) {
+    User user = userService.findById(id);
+    return ApiResponse.success("User found", user);
+}
+```
+
+**Response:**
+```json
+{
+  "status": 200,
+  "traceId": "a1b2c3d4-e5f6-4a5b-8c9d-0e1f2a3b4c5d",
+  "message": "User found",
+  "content": { "id": 1, "name": "John" },
+  "timestamp": "2026-02-06T10:30:45.123Z"
+}
+```
+
+#### Enhanced Tracing with TraceIdFilter *(New in v2.0.0)*
+
+For comprehensive distributed tracing, register the `TraceIdFilter` to automatically manage trace IDs across your entire request lifecycle:
+
+**Step 1: Register the Filter**
+
+```java
+@Configuration
+public class FilterConfig {
+
+    @Bean
+    public FilterRegistrationBean<TraceIdFilter> traceIdFilter() {
+        FilterRegistrationBean<TraceIdFilter> registration = new FilterRegistrationBean<>();
+        registration.setFilter(new TraceIdFilter());
+        registration.addUrlPatterns("/*");
+        registration.setOrder(Ordered.HIGHEST_PRECEDENCE);
+        return registration;
+    }
+}
+```
+
+**Step 2: Automatic Benefits**
+
+Once registered, the filter:
+1. Generates a unique UUID for each incoming request
+2. Stores it in SLF4J MDC (available for logging)
+3. Makes it available to `ApiResponse` automatically
+4. Cleans up MDC after request completion
+
+**Step 3: Trace ID in Logs**
+
+All your log statements automatically include the trace ID:
+
+```java
+@Service
+@Slf4j
+public class UserService {
+    
+    public User findById(Long id) {
+        log.info("Finding user by ID: {}", id);  // Trace ID automatically included
+        // ... business logic
+        log.debug("User retrieved from database");
+        return user;
+    }
+}
+```
+
+**Log Output (with Logback configuration):**
+```
+2026-02-06 10:30:45.123 [a1b2c3d4-e5f6-4a5b-8c9d-0e1f2a3b4c5d] INFO  c.e.s.UserService - Finding user by ID: 123
+2026-02-06 10:30:45.234 [a1b2c3d4-e5f6-4a5b-8c9d-0e1f2a3b4c5d] DEBUG c.e.s.UserService - User retrieved from database
+```
+
+**Logback Configuration (logback-spring.xml):**
+```xml
+<configuration>
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-DD HH:mm:ss.SSS} [%X{traceId}] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+    
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+</configuration>
+```
+
+### Trace ID Priority
+
+The trace ID is resolved with the following priority:
+
+1. **Explicit Parameter** - If you explicitly set a trace ID via builder
+2. **MDC Context** - If `TraceIdFilter` has set a trace ID in MDC
+3. **Auto-Generated** - Falls back to a random UUID
+
+```java
+// Priority 1: Explicit trace ID
+UUID customId = UUID.randomUUID();
+ApiResponse.<User>builder()
+    .traceId(customId)  // This takes highest priority
+    .status(200)
+    .message("User found")
+    .content(user)
+    .build();
+
+// Priority 2: From MDC (when TraceIdFilter is active)
+// Automatically uses the filter-generated trace ID
+
+// Priority 3: Auto-generated (when no filter and no explicit ID)
+// Falls back to random UUID
+```
+
+### End-to-End Tracing Example
+
+**Scenario:** Client → API Gateway → User Service → Database
+
+```java
+// API Gateway receives request with trace ID
+@RestController
+@RequestMapping("/api/users")
+public class UserController {
+    
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<User>> getUser(@PathVariable Long id) {
+        // TraceIdFilter already set MDC with trace ID
+        log.info("Received request for user: {}", id);
+        
+        User user = userService.findById(id);
+        
+        // Response automatically includes the same trace ID
+        return ApiResponse.success("User found", user);
+    }
+}
+
+@Service
+@Slf4j
+public class UserService {
+    
+    public User findById(Long id) {
+        // All logs automatically include trace ID from MDC
+        log.info("Finding user in database: {}", id);
+        
+        User user = userRepository.findById(id)
+            .orElseThrow(() -> {
+                log.warn("User not found: {}", id);
+                return new ResourceNotFoundException("User", id);
+            });
+            
+        log.info("User found: {}", user.getEmail());
+        return user;
+    }
+}
+```
+
+**Complete Request Flow:**
+```
+1. Request arrives → TraceIdFilter generates UUID: a1b2c3d4-...
+2. MDC.put("traceId", "a1b2c3d4-...")
+3. Controller logs: [a1b2c3d4-...] INFO - Received request for user: 123
+4. Service logs:    [a1b2c3d4-...] INFO - Finding user in database: 123
+5. Service logs:    [a1b2c3d4-...] INFO - User found: john@example.com
+6. Response includes: "traceId": "a1b2c3d4-..."
+7. MDC.clear() in finally block
+```
+
+### Propagating Trace IDs to Downstream Services
+
+For microservices architectures, propagate the trace ID to downstream services:
+
+```java
+@Service
+@RequiredArgsConstructor
+public class OrderService {
+    
+    private final RestTemplate restTemplate;
+    
+    public Order createOrder(OrderDto dto) {
+        // Get trace ID from MDC
+        String traceId = MDC.get("traceId");
+        
+        // Create headers with trace ID
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-Trace-Id", traceId);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        
+        // Call downstream service
+        HttpEntity<OrderDto> request = new HttpEntity<>(dto, headers);
+        ResponseEntity<ApiResponse<Order>> response = restTemplate.exchange(
+            "http://payment-service/api/payments",
+            HttpMethod.POST,
+            request,
+            new ParameterizedTypeReference<ApiResponse<Order>>() {}
+        );
+        
+        return response.getBody().getContent();
+    }
+}
+```
+
+**Downstream Service (Payment Service):**
+```java
+@RestController
+@RequestMapping("/api/payments")
+public class PaymentController {
+    
+    @PostMapping
+    public ResponseEntity<ApiResponse<Payment>> processPayment(
+            @RequestHeader(value = "X-Trace-Id", required = false) String incomingTraceId,
+            @RequestBody PaymentDto dto) {
+        
+        // Use incoming trace ID if provided
+        if (incomingTraceId != null) {
+            MDC.put("traceId", incomingTraceId);
+        }
+        
+        Payment payment = paymentService.process(dto);
+        return ApiResponse.created("Payment processed", payment);
+    }
+}
+```
+
+### Testing with Trace IDs
+
+**Unit Tests:**
+```java
+@Test
+void testTraceIdInResponse() {
+    // Set trace ID in MDC (simulating TraceIdFilter)
+    String expectedTraceId = UUID.randomUUID().toString();
+    MDC.put("traceId", expectedTraceId);
+    
+    try {
+        ApiResponse<User> response = ApiResponse.<User>builder()
+            .status(200)
+            .message("Success")
+            .content(user)
+            .build();
+        
+        assertEquals(UUID.fromString(expectedTraceId), response.getTraceId());
+    } finally {
+        MDC.clear();
+    }
+}
+```
+
+**Integration Tests:**
+```java
+@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
+class UserControllerIntegrationTest {
+    
+    @Autowired
+    private TestRestTemplate restTemplate;
+    
+    @Test
+    void testTraceIdInApiResponse() {
+        ResponseEntity<ApiResponse<User>> response = restTemplate.exchange(
+            "/api/users/1",
+            HttpMethod.GET,
+            null,
+            new ParameterizedTypeReference<ApiResponse<User>>() {}
+        );
+        
+        assertNotNull(response.getBody().getTraceId());
+        // Trace ID should be in response
+    }
+}
+```
+
+### Benefits
+
+1. **Simplified Debugging** - Track requests across multiple services with a single ID
+2. **Log Correlation** - All logs for a request share the same trace ID
+3. **Performance Monitoring** - Identify slow requests by trace ID
+4. **Error Investigation** - Quickly find all logs related to a failed request
+5. **Distributed Systems** - Essential for microservices architecture
+6. **Production Ready** - No memory leaks with automatic MDC cleanup
 
 ## 📖 Usage
 
@@ -978,10 +1274,10 @@ public class CustomExceptionHandler {
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `status` | `Integer` | HTTP status code (e.g., 200, 201, 404) - *Added in v1.2.0* |
-| `traceId` | `UUID` | Unique identifier for request tracing and log correlation - *Added in v1.2.0* |
+| `status` | `Integer` | HTTP status code (e.g., 200, 201, 404) |
+| `traceId` | `UUID` | Unique identifier for request tracing and log correlation - *Enhanced in v2.0.0 with MDC integration* |
 | `message` | `String` | Human-readable message describing the response |
-| `data` | `T` (Generic) | Response payload (can be any type or null) |
+| `content` | `T` (Generic) | Response payload (can be any type or null) |
 | `timestamp` | `Instant` | ISO-8601 formatted UTC timestamp (auto-generated) |
 
 ## 🔍 Response Structure
@@ -993,8 +1289,8 @@ All responses follow this consistent structure:
   "status": 200,
   "traceId": "550e8400-e29b-41d4-a716-446655440000",
   "message": "string",
-  "data": {},
-  "timestamp": "2026-02-01T10:30:45.123456Z"
+  "content": {},
+  "timestamp": "2026-02-06T10:30:45.123456Z"
 }
 ```
 
@@ -1695,9 +1991,37 @@ If you encounter issues not covered here:
 
 ## ❓ FAQ
 
-### How do I use trace IDs for debugging? *(New in v1.2.0)*
+### How do I use trace IDs for debugging? *(Enhanced in v2.0.0)*
 
-Every response includes an auto-generated UUID `traceId`. You can use it to correlate logs across your distributed system:
+Every response includes an auto-generated UUID `traceId` for request tracking. For comprehensive distributed tracing with MDC integration, see the **[Distributed Tracing](#-distributed-tracing-enhanced-in-v200)** section above.
+
+**Quick Example with TraceIdFilter:**
+
+```java
+// 1. Register TraceIdFilter
+@Configuration
+public class FilterConfig {
+    @Bean
+    public FilterRegistrationBean<TraceIdFilter> traceIdFilter() {
+        FilterRegistrationBean<TraceIdFilter> registration = new FilterRegistrationBean<>();
+        registration.setFilter(new TraceIdFilter());
+        registration.addUrlPatterns("/*");
+        registration.setOrder(Ordered.HIGHEST_PRECEDENCE);
+        return registration;
+    }
+}
+
+// 2. Use in your service (trace ID automatically in logs)
+@Service
+@Slf4j
+public class UserService {
+    public User createUser(UserDto dto) {
+        log.info("Creating user with email: {}", dto.getEmail());  // [traceId] in logs
+        // ... business logic
+        return user;
+    }
+}
+```
 
 **Response:**
 ```json
@@ -1705,35 +2029,17 @@ Every response includes an auto-generated UUID `traceId`. You can use it to corr
   "status": 200,
   "traceId": "550e8400-e29b-41d4-a716-446655440000",
   "message": "User created",
-  "data": {...},
-  "timestamp": "2026-02-01T10:30:45.123Z"
+  "content": {...},
+  "timestamp": "2026-02-06T10:30:45.123Z"
 }
 ```
 
-**In your logs:**
-```java
-@Service
-@Slf4j
-public class UserService {
-    public User createUser(UserDto dto) {
-        log.info("Creating user with email: {}", dto.getEmail());
-        // ... business logic
-        return user;
-    }
-}
+**Logs:**
+```
+2026-02-06 10:30:45.123 [550e8400-e29b-41d4-a716-446655440000] INFO c.e.s.UserService - Creating user with email: john@example.com
 ```
 
-You can also pass the trace ID to downstream services for end-to-end tracing. To use a custom trace ID instead of auto-generated:
-
-```java
-UUID customTraceId = UUID.fromString(request.getHeader("X-Trace-Id"));
-ApiResponse<User> response = ApiResponse.<User>builder()
-    .status(HttpStatus.OK.value())
-    .traceId(customTraceId)
-    .message("User found")
-    .data(user)
-    .build();
-return ResponseEntity.ok(response);
+For more details on MDC integration, propagating trace IDs to downstream services, and end-to-end tracing examples, see the **[Distributed Tracing](#-distributed-tracing-enhanced-in-v200)** section.
 ```
 
 ### How do I create custom business exceptions? *(New in v1.2.0)*
