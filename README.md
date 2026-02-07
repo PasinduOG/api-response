@@ -2769,11 +2769,45 @@ RFC 7807 ProblemDetail responses include:
 
 ## 🤝 Contributing
 
-Contributions are welcome! This project follows standard open-source contribution practices.
+**We welcome and encourage contributions from everyone!** 🎉
+
+This project is licensed under the **Apache License 2.0**, which means:
+- ✅ **Anyone can contribute** - The project is open to all developers
+- ✅ **Your contributions are protected** - No one can claim exclusive ownership of your work
+- ✅ **You retain copyright** - You keep rights to your work while granting usage rights to the project
+- ✅ **Fair and equal terms** - All contributions are made under the same Apache 2.0 terms
+
+### 🔐 Contributor License Agreement
+
+By contributing to this project, you agree that:
+
+1. **Your contributions** will be licensed under the Apache License 2.0
+2. **You grant** the project maintainers and users a perpetual, worldwide license to use your contributions
+3. **You retain** copyright to your contributions
+4. **You confirm** that you have the right to submit the contribution and grant these rights
+5. **Your work is protected** - No one (including the project maintainer) can claim exclusive ownership of your contributions or publish them elsewhere as their own
+
+### 📜 What Apache 2.0 Means for Contributors
+
+✅ **Your Rights:**
+- You keep copyright to your contributions
+- Your name is attributed in the project
+- You can use your contributions elsewhere
+- You're protected from patent claims
+
+🛡️ **Project Protection:**
+- **Prevents anyone from copyrighting the project** - No one can claim exclusive ownership
+- Ensures the project remains open source
+- Protects all contributors equally
+- Maintains free usage for everyone
+- **Cannot be published elsewhere as proprietary** - Derivative works must maintain the Apache 2.0 License
 
 ### How to Contribute
 
 1. **Fork the repository** on GitHub
+   - Navigate to https://github.com/pasinduog/api-response
+   - Click the "Fork" button in the top-right corner
+
 2. **Clone your fork** locally
    ```bash
    git clone https://github.com/YOUR_USERNAME/api-response.git
@@ -2785,43 +2819,76 @@ Contributions are welcome! This project follows standard open-source contributio
    git checkout -b feature/amazing-feature
    ```
 
-4. **Make your changes** with clear commit messages
+4. **Make your changes**
+   - Follow the existing code style and conventions
+   - Add JavaDoc comments for all public methods and classes
+   - Ensure all existing tests pass (when tests are added)
+   - Keep changes focused and atomic
+
+5. **Commit your changes** (follow conventional commit format)
    ```bash
-   git commit -m 'Add amazing feature'
+   git commit -m 'feat: add amazing feature'
    ```
 
-5. **Push to your fork**
+6. **Push to your fork**
    ```bash
    git push origin feature/amazing-feature
    ```
 
-6. **Open a Pull Request** on the main repository
+7. **Open a Pull Request** on the main repository
+   - Go to the original repository on GitHub
+   - Click "New Pull Request"
+   - Select your branch and describe your changes in detail
+   - Reference any related issues
 
 ### Contribution Guidelines
 
-#### Code Quality
+#### Code Quality Standards
 - ✅ Follow existing code style and conventions
-- ✅ Add JavaDoc comments for all public methods and classes
-- ✅ Ensure all existing tests pass (when tests are added)
+- ✅ Add comprehensive JavaDoc comments for all public methods and classes
+- ✅ Include explicit constructor documentation (even for Lombok-generated ones)
+- ✅ Ensure all existing tests pass
 - ✅ Keep changes focused and atomic
-- ✅ Update README.md if adding new features
+- ✅ Update README.md if adding new features or changing behavior
+- ✅ Verify zero Javadoc warnings (`mvn javadoc:javadoc` should run cleanly)
 
-#### Commit Messages
-Follow conventional commit format:
-```
+#### Commit Message Format
+Follow [Conventional Commits](https://www.conventionalcommits.org/) specification:
+
+```bash
+# Format: <type>(<scope>): <subject>
+
+# Types:
 feat: add new response wrapper method
 fix: correct trace ID generation
 docs: update installation instructions
 refactor: improve exception handling
 test: add unit tests for ApiResponse
+style: format code and fix whitespace
+chore: update dependencies
+perf: optimize response creation
+```
+
+**Examples:**
+```bash
+feat(dto): add pagination support to ApiResponse
+fix(exception): resolve NPE in GlobalExceptionHandler
+docs(readme): add contributing guidelines
+test(response): add unit tests for success factory methods
 ```
 
 #### Pull Request Process
-1. Update README.md with details of changes (if applicable)
-2. Update JavaDoc documentation
-3. Ensure the PR description clearly describes the problem and solution
-4. Reference any related issues using `#issue-number`
-5. Wait for review and address feedback
+1. **Update documentation** - Modify README.md if adding features or changing behavior
+2. **Add JavaDoc** - Document all new public methods and classes with zero warnings
+3. **Write clear PR description**:
+   - What problem does this solve?
+   - What changes were made?
+   - How was it tested?
+   - Any breaking changes?
+4. **Reference issues** - Link related issues using `#issue-number` or `Fixes #issue-number`
+5. **Wait for review** - Maintainer will review and provide feedback
+6. **Address feedback** - Make requested changes and push updates
+7. **Squash commits** - Clean up commit history if needed before merge
 
 ### Development Setup
 
@@ -2878,7 +2945,72 @@ api-response/
 
 ## 📄 License
 
-This project is licensed under the Apache License 2.0 - see the [LICENSE](http://www.apache.org/licenses/LICENSE-2.0.txt) file for details.
+This project is licensed under the **Apache License 2.0** - see the [LICENSE](LICENSE) file for full details.
+
+### What This Means
+
+The Apache 2.0 License is a permissive open-source license that:
+
+#### ✅ **Allows You To:**
+- ✅ Use this library in personal, commercial, or proprietary projects
+- ✅ Modify and distribute the source code
+- ✅ Sublicense the code
+- ✅ Use the software for any purpose (private, commercial, etc.)
+- ✅ Patent protection - contributors grant you patent rights
+
+#### 🛡️ **Protects The Project:**
+- 🛡️ **No one can claim ownership** - Others cannot copyright this work as their own
+- 🛡️ **Attribution required** - Anyone using or modifying this code must give credit
+- 🛡️ **License propagation** - Modified versions must include the Apache 2.0 License
+- 🛡️ **Trademark protection** - Project name and trademarks remain protected
+- 🛡️ **No liability** - Software is provided "as-is" without warranty
+
+#### 🤝 **For Contributors:**
+- 🤝 **Open contribution** - Anyone can contribute under the same terms
+- 🤝 **Grant of rights** - By contributing, you grant Apache 2.0 rights to your contributions
+- 🤝 **Your work is protected** - Contributions are attributed and cannot be claimed by others
+- 🤝 **Patent peace** - Contributors cannot sue users for patent infringement related to their contributions
+
+### Key License Terms
+
+```
+Copyright 2026 Pasindu OG
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+```
+
+### Summary for Users
+
+✅ **You CAN:**
+- Use in commercial products
+- Modify the code
+- Distribute copies
+- Grant sublicenses
+- Use privately
+
+❌ **You CANNOT:**
+- Hold the author liable
+- Use contributor names for endorsement
+- Remove copyright notices
+- Claim ownership of the original work
+
+📋 **You MUST:**
+- Include the Apache 2.0 License
+- Include copyright notice
+- State significant changes made
+- Include the NOTICE file (if applicable)
+
+For the complete license text, see [LICENSE](LICENSE) or visit [Apache.org](http://www.apache.org/licenses/LICENSE-2.0).
 
 ## 📧 Contact
 
