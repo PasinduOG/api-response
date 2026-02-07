@@ -57,6 +57,7 @@ A lightweight, type-safe API Response wrapper for Spring Boot applications. Stan
 - 🚀 **Truly Zero Configuration** - Spring Boot 3.x/4.x auto-configuration with META-INF imports
 - 🎯 **Production-Ready** - Built-in RFC 9457 ProblemDetail with 10 comprehensive exception handlers
 - 🛡️ **Complete Error Coverage** - Handles validation, JSON parsing, 404s, method mismatches, media types, and more *(New in v2.0.0)*
+- 🔍 **Consistent Trace IDs** - Logs and error responses always have matching trace IDs for easy debugging *(New in v2.0.0)*
 - 🔒 **Type-Safe & Immutable** - Thread-safe design with generic type support
 - 📦 **Ultra-Lightweight** - Only ~10KB JAR size with provided dependencies
 - 🔍 **Microservices-Ready** - Built-in trace IDs for distributed tracing
@@ -282,9 +283,37 @@ The library includes a **production-ready `GlobalExceptionHandler`** that automa
 ✅ **Unsupported Media Type Handler** - Handles invalid Content-Type headers (HTTP 415) *(New in v2.0.0)*  
 ✅ **Null Pointer Handler** - Specific handling for NullPointerException (HTTP 500)  
 ✅ **Custom ApiException Handler** - Handles custom business exceptions extending `ApiException` *(New in v1.2.0)*  
-✅ **Automatic Logging** - SLF4J integration for all errors  
+✅ **Automatic Logging** - SLF4J integration for all errors with consistent trace IDs *(Enhanced in v2.0.0)*  
+✅ **Trace ID Consistency** - Logs and responses always have matching trace IDs *(New in v2.0.0)*  
 ✅ **Timestamp Support** - All error responses include RFC 3339 timestamps  
-✅ **RFC 9457 Compliance** - Standard ProblemDetail format (supersedes RFC 7807) *(New in v2.0.0)*  
+✅ **RFC 9457 Compliance** - Standard ProblemDetail format (supersedes RFC 7807) *(New in v2.0.0)*
+
+### Trace ID Consistency (New in v2.0.0)
+
+All exception handlers now ensure **consistent trace IDs** between logs and error responses:
+
+- **With TraceIdFilter**: Uses the trace ID from SLF4J MDC
+- **Without Filter**: Generates a UUID and stores it in MDC for consistent logging
+- **Guaranteed**: Logs and responses always have matching trace IDs
+
+**Example Log Output:**
+```
+2026-02-07 10:30:45.123 [550e8400-e29b-41d4-a716-446655440000] ERROR GlobalExceptionHandler - Error in SQLExceptionTranslator:112
+```
+
+**Matching Error Response:**
+```json
+{
+  "status": 500,
+  "traceId": "550e8400-e29b-41d4-a716-446655440000",
+  "detail": "Internal Server Error. Please contact technical support",
+  "timestamp": "2026-02-07T10:30:45.123Z"
+}
+```
+
+✅ **No more "N/A" trace IDs** - Every error has a real, correlatable trace ID  
+✅ **Easy debugging** - Copy trace ID from response and find all related logs  
+✅ **Thread-safe** - Proper MDC management ensures no cross-thread contamination  
 
 ### Custom Business Exceptions (New in v1.2.0)
 
@@ -1984,13 +2013,12 @@ Project Properties → Java Compiler → Annotation Processing
 ☑ Enable annotation processing
 ```
 
-#### 3. Trace ID Not Appearing in Responses
+#### 3. Trace ID Not Appearing in Success Responses
 
-**Problem:** The `traceId` field is null or missing.
+**Problem:** The `traceId` field is null or missing in success responses.
 
 **Solution:**
-- This is expected if using builder pattern directly without setting traceId
-- Use factory methods which auto-generate trace IDs:
+- For **success responses**, use factory methods which auto-generate trace IDs:
 
 ```java
 // ✅ Correct - Auto-generates trace ID
@@ -2001,9 +2029,12 @@ return ResponseEntity.ok(ApiResponse.<User>builder()
     .status(200)
     .traceId(UUID.randomUUID())  // Must set manually
     .message("Success")
-    .data(data)
+    .content(data)
     .build());
 ```
+
+- For **error responses**, trace IDs are **automatically generated** by GlobalExceptionHandler *(v2.0.0+)*
+- All error logs and responses have matching trace IDs for easy correlation
 
 #### 4. Dependency Conflicts
 

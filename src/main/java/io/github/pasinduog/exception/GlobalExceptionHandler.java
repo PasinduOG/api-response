@@ -95,6 +95,24 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Gets or generates a trace ID for error tracking.
+     * <p>
+     * Priority: 1. MDC context, 2. Generate new UUID.
+     * This ensures consistent trace ID between logs and error responses.
+     * </p>
+     *
+     * @return The trace ID from MDC or a newly generated UUID.
+     */
+    private String getOrGenerateTraceId() {
+        String traceId = MDC.get("traceId");
+        if (traceId == null) {
+            traceId = UUID.randomUUID().toString();
+            MDC.put("traceId", traceId);
+        }
+        return traceId;
+    }
+
+    /**
      * Handles all unexpected exceptions (catch-all handler).
      * <p>
      * This method acts as a safety net for any error not explicitly handled by other methods.
@@ -111,14 +129,18 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(Exception.class)
     public ProblemDetail handleAllExceptions(Exception ex) {
+        String traceId = getOrGenerateTraceId();
         StackTraceElement rootCause = ex.getStackTrace().length > 0 ? ex.getStackTrace()[0] : null;
         String className = (rootCause != null) ? rootCause.getClassName() : "Unknown Class";
         int lineNumber = (rootCause != null) ? rootCause.getLineNumber() : -1;
-        String traceId = MDC.get("traceId") != null ? MDC.get("traceId") : "N/A";
+
         log.error("[TraceID: {}] Error in {}:{} - Message: {}",
                 traceId, className, lineNumber, ex.getMessage());
-        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error. Please contact technical support");
-        problemDetail.setProperty("traceId", MDC.get("traceId") != null ? MDC.get("traceId") : UUID.randomUUID());
+
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "Internal Server Error. Please contact technical support");
+        problemDetail.setProperty("traceId", traceId);
         problemDetail.setProperty("timestamp", Instant.now());
         return problemDetail;
     }
@@ -140,6 +162,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ProblemDetail handleValidationExceptions(MethodArgumentNotValidException ex) {
+        String traceId = getOrGenerateTraceId();
         Map<String, String> errorMessage = new HashMap<>();
         for (FieldError fieldError : ex.getBindingResult().getFieldErrors()) {
             assert fieldError.getDefaultMessage() != null;
@@ -147,10 +170,10 @@ public class GlobalExceptionHandler {
             errorMessage.merge(fieldError.getField(), fieldError.getDefaultMessage(),
                     (msg1, msg2) -> msg1 + "; " + msg2);
         }
-        log.warn("Validation error: {}", errorMessage);
+        log.warn("[TraceID: {}] Validation error: {}", traceId, errorMessage);
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Validation Failed");
         problemDetail.setProperty("errors", errorMessage);
-        problemDetail.setProperty("traceId", MDC.get("traceId") != null ? MDC.get("traceId") : UUID.randomUUID());
+        problemDetail.setProperty("traceId", traceId);
         problemDetail.setProperty("timestamp", Instant.now());
         return problemDetail;
     }
@@ -162,7 +185,7 @@ public class GlobalExceptionHandler {
      * such as passing a string where an integer is required.
      * </p>
      * <p>
-     * The response includes a traceId from SLF4J MDC (or a generated UUID) and timestamp
+     * The response includes a consistent traceId (from MDC or generated) and timestamp
      * to help with debugging and log correlation.
      * </p>
      *
@@ -171,11 +194,12 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ProblemDetail handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException ex) {
+        String traceId = getOrGenerateTraceId();
         String errorMessage = String.format("Invalid value '%s' for parameter '%s'. Expected type: %s.",
                 ex.getValue(), ex.getName(), ex.getRequiredType() != null ? ex.getRequiredType().getSimpleName() : "unknown");
-        log.warn("Type mismatch error: {}", errorMessage);
+        log.warn("[TraceID: {}] Type mismatch error: {}", traceId, errorMessage);
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, errorMessage);
-        problemDetail.setProperty("traceId", MDC.get("traceId") != null ? MDC.get("traceId") : UUID.randomUUID());
+        problemDetail.setProperty("traceId", traceId);
         problemDetail.setProperty("timestamp", Instant.now());
         return problemDetail;
     }
@@ -186,7 +210,7 @@ public class GlobalExceptionHandler {
      * Triggered when the request body is invalid JSON (e.g., missing commas, brackets, or wrong types).
      * </p>
      * <p>
-     * The response includes a traceId from SLF4J MDC (or a generated UUID) and timestamp
+     * The response includes a consistent traceId (from MDC or generated) and timestamp
      * for debugging and log correlation.
      * </p>
      *
@@ -195,9 +219,10 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ProblemDetail handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
-        log.warn("Malformed JSON request: {}", ex.getMessage());
+        String traceId = getOrGenerateTraceId();
+        log.warn("[TraceID: {}] Malformed JSON request: {}", traceId, ex.getMessage());
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Malformed JSON request. Please check your request body format.");
-        problemDetail.setProperty("traceId", MDC.get("traceId") != null ? MDC.get("traceId") : UUID.randomUUID());
+        problemDetail.setProperty("traceId", traceId);
         problemDetail.setProperty("timestamp", Instant.now());
         return problemDetail;
     }
@@ -217,12 +242,13 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(MissingServletRequestParameterException.class)
     public ProblemDetail handleMissingServletRequestParameterException(MissingServletRequestParameterException ex) {
+        String traceId = getOrGenerateTraceId();
         String message = String.format("Required request parameter '%s' (type: %s) is missing.",
                 ex.getParameterName(), ex.getParameterType());
-        log.warn("Missing parameter: {}", message);
+        log.warn("[TraceID: {}] Missing parameter: {}", traceId, message);
 
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, message);
-        problemDetail.setProperty("traceId", MDC.get("traceId") != null ? MDC.get("traceId") : UUID.randomUUID());
+        problemDetail.setProperty("traceId", traceId);
         problemDetail.setProperty("timestamp", Instant.now());
         return problemDetail;
     }
@@ -230,11 +256,11 @@ public class GlobalExceptionHandler {
     /**
      * Handles 404 Not Found errors for static resources and missing endpoints (Spring Boot 3.2+).
      * <p>
-     * This eliminates the need for configuring `spring.mvc.throw-exception-if-no-handler-found`.
+     * This eliminates the need for configuring {@code spring.mvc.throw-exception-if-no-handler-found}.
      * It catches the exception thrown when no controller or static resource is found.
      * </p>
      * <p>
-     * The response includes a traceId from SLF4J MDC (or a generated UUID) and timestamp
+     * The response includes a consistent traceId (from MDC or generated) and timestamp
      * for debugging and log correlation.
      * </p>
      *
@@ -243,11 +269,12 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(NoResourceFoundException.class)
     public ProblemDetail handleNoResourceFoundException(NoResourceFoundException ex) {
+        String traceId = getOrGenerateTraceId();
         String message = String.format("The requested resource '/%s' was not found.", ex.getResourcePath());
-        log.warn("404 Not Found: {}", message);
+        log.warn("[TraceID: {}] 404 Not Found: {}", traceId, message);
 
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, message);
-        problemDetail.setProperty("traceId", MDC.get("traceId") != null ? MDC.get("traceId") : UUID.randomUUID());
+        problemDetail.setProperty("traceId", traceId);
         problemDetail.setProperty("timestamp", Instant.now());
         return problemDetail;
     }
@@ -259,7 +286,7 @@ public class GlobalExceptionHandler {
      * by the endpoint (e.g., it only expects GET).
      * </p>
      * <p>
-     * The response includes a traceId from SLF4J MDC (or a generated UUID) and timestamp
+     * The response includes a consistent traceId (from MDC or generated) and timestamp
      * for debugging and log correlation.
      * </p>
      *
@@ -268,12 +295,13 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ProblemDetail handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException ex) {
+        String traceId = getOrGenerateTraceId();
         String message = String.format("Method '%s' is not supported for this endpoint. Supported methods are: %s",
                 ex.getMethod(), ex.getSupportedHttpMethods());
-        log.warn("Method not allowed: {}", message);
+        log.warn("[TraceID: {}] Method not allowed: {}", traceId, message);
 
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.METHOD_NOT_ALLOWED, message);
-        problemDetail.setProperty("traceId", MDC.get("traceId") != null ? MDC.get("traceId") : UUID.randomUUID());
+        problemDetail.setProperty("traceId", traceId);
         problemDetail.setProperty("timestamp", Instant.now());
         return problemDetail;
     }
@@ -293,12 +321,13 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
     public ProblemDetail handleHttpMediaTypeNotSupportedException(HttpMediaTypeNotSupportedException ex) {
+        String traceId = getOrGenerateTraceId();
         String message = String.format("Content type '%s' is not supported. Supported content types: %s",
                 ex.getContentType(), ex.getSupportedMediaTypes());
-        log.warn("Unsupported media type: {}", message);
+        log.warn("[TraceID: {}] Unsupported media type: {}", traceId, message);
 
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.UNSUPPORTED_MEDIA_TYPE, message);
-        problemDetail.setProperty("traceId", MDC.get("traceId") != null ? MDC.get("traceId") : UUID.randomUUID());
+        problemDetail.setProperty("traceId", traceId);
         problemDetail.setProperty("timestamp", Instant.now());
         return problemDetail;
     }
@@ -310,7 +339,7 @@ public class GlobalExceptionHandler {
      * handler allows for distinct logging or custom messaging for NPEs if required in the future.
      * </p>
      * <p>
-     * The response includes a traceId from SLF4J MDC (or a generated UUID) and timestamp
+     * The response includes a consistent traceId (from MDC or generated) and timestamp
      * for debugging and log correlation.
      * </p>
      *
@@ -319,9 +348,10 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(NullPointerException.class)
     public ProblemDetail handleNullPointerExceptions(NullPointerException ex) {
-        log.error("Null pointer exception occurred: ", ex);
+        String traceId = getOrGenerateTraceId();
+        log.error("[TraceID: {}] Null pointer exception occurred: ", traceId, ex);
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "A null pointer exception occurred.");
-        problemDetail.setProperty("traceId", MDC.get("traceId") != null ? MDC.get("traceId") : UUID.randomUUID());
+        problemDetail.setProperty("traceId", traceId);
         problemDetail.setProperty("timestamp", Instant.now());
         return problemDetail;
     }
@@ -334,7 +364,7 @@ public class GlobalExceptionHandler {
      * error created by the library user.
      * </p>
      * <p>
-     * The response includes a traceId from SLF4J MDC (or a generated UUID) and timestamp
+     * The response includes a consistent traceId (from MDC or generated) and timestamp
      * for debugging and log correlation across distributed systems.
      * </p>
      *
@@ -343,10 +373,11 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(ApiException.class)
     public ProblemDetail handleApiException(ApiException ex) {
-        log.warn("Business logic exception: {} | Status: {}", ex.getMessage(), ex.getStatus());
+        String traceId = getOrGenerateTraceId();
+        log.warn("[TraceID: {}] Business logic exception: {} | Status: {}", traceId, ex.getMessage(), ex.getStatus());
 
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(ex.getStatus(), ex.getMessage());
-        problemDetail.setProperty("traceId", MDC.get("traceId") != null ? MDC.get("traceId") : UUID.randomUUID());
+        problemDetail.setProperty("traceId", traceId);
         problemDetail.setProperty("timestamp", Instant.now());
 
         return problemDetail;
