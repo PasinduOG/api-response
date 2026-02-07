@@ -35,13 +35,24 @@ import org.springframework.context.annotation.Configuration;
  * </pre>
  *
  * @author Pasindu OG
- * @version 1.3.0
+ * @version 2.0.0
  * @since 1.3.0
  * @see GlobalExceptionHandler
  */
 @Configuration
 @SuppressWarnings("unused")
 public class ApiResponseAutoConfiguration {
+
+    /**
+     * Default constructor for ApiResponseAutoConfiguration.
+     * <p>
+     * This constructor is automatically invoked by Spring's dependency injection
+     * container during application startup when autoconfiguration is enabled.
+     * </p>
+     */
+    public ApiResponseAutoConfiguration() {
+        // Default constructor for Spring autoconfiguration
+    }
 
     /**
      * Registers the {@link GlobalExceptionHandler} as a Spring bean.

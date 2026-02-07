@@ -23,7 +23,7 @@ import org.springframework.http.HttpStatus;
  * </pre>
  *
  * @author Pasindu OG
- * @version 1.3.0
+ * @version 2.0.0
  * @since 1.2.0
  * @see GlobalExceptionHandler
  */
