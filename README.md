@@ -13,11 +13,10 @@
 [![Java](https://img.shields.io/badge/Java-17+-orange.svg)](https://www.oracle.com/java/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0.2-brightgreen.svg)](https://spring.io/projects/spring-boot)
 [![Lombok](https://img.shields.io/badge/Lombok-1.18.42-blue.svg)](https://projectlombok.org/)
-[![Version](https://img.shields.io/badge/Version-2.0.0--UNRELEASED-orange.svg)](https://github.com/pasinduog/api-response)
+[![Version](https://img.shields.io/badge/Version-2.0.0-brightgreen.svg)](https://github.com/pasinduog/api-response)
 
 A lightweight, type-safe API Response wrapper for Spring Boot applications. Standardize your REST API responses with consistent structure, automatic timestamps, distributed tracing support, built-in pagination, and clean factory methods. Features zero-configuration Spring Boot auto-configuration and production-ready exception handling with comprehensive RFC 9457 ProblemDetail support covering 10 common error scenarios.
 
-> ⚠️ **Note:** Version 2.0.0 is currently unreleased and in development. The latest stable version available on Maven Central is 1.3.0.
 
 ## 🔗 Quick Links
 
@@ -118,44 +117,7 @@ Unlike other response wrapper libraries, this one offers:
 - ✅ **Production-Grade Quality** - Clean builds, proper documentation, and battle-tested code
 ## 🚀 Installation
 
-> ⚠️ **Important:** Version 2.0.0 is currently **UNRELEASED** and not available on Maven Central.  
-> For production use, please use the latest stable version **1.3.0**:
-
-### Maven (Stable - v1.3.0)
-
-```xml
-<dependency>
-    <groupId>io.github.pasinduog</groupId>
-    <artifactId>api-response</artifactId>
-    <version>1.3.0</version>
-</dependency>
-```
-
-### Gradle (Stable - v1.3.0)
-
-```gradle
-implementation 'io.github.pasinduog:api-response:1.3.0'
-```
-
-### Gradle Kotlin DSL (Stable - v1.3.0)
-
-```kotlin
-implementation("io.github.pasinduog:api-response:1.3.0")
-```
-
----
-
-### Development Version (v2.0.0 - Unreleased)
-
-If you want to test the unreleased features, you can build from source:
-
-```bash
-git clone https://github.com/pasinduog/api-response.git
-cd api-response
-mvn clean install
-```
-
-Then use in your project:
+### Maven (Latest - v2.0.0)
 
 ```xml
 <dependency>
@@ -165,11 +127,37 @@ Then use in your project:
 </dependency>
 ```
 
-**Note:** This version includes 6 additional exception handlers not available in v1.3.0.
+### Gradle (Latest - v2.0.0)
+
+```gradle
+implementation 'io.github.pasinduog:api-response:2.0.0'
+```
+
+### Gradle Kotlin DSL (Latest - v2.0.0)
+
+```kotlin
+implementation("io.github.pasinduog:api-response:2.0.0")
+```
+
+---
+
+### Previous Stable Version (v1.3.0)
+
+If you need the previous stable version:
+
+```xml
+<dependency>
+    <groupId>io.github.pasinduog</groupId>
+    <artifactId>api-response</artifactId>
+    <version>1.3.0</version>
+</dependency>
+```
+
+**Note:** Version 2.0.0 includes 6 additional exception handlers and enhanced features compared to v1.3.0. See [Version History](#-version-history) for details.
 
 ## 📁 Project Structure
 
-The library is organized into three main packages:
+The library is organized into four main packages:
 
 ```
 io.github.pasinduog
@@ -177,9 +165,11 @@ io.github.pasinduog
 │   └── ApiResponseAutoConfiguration.java    # Spring Boot auto-configuration
 ├── dto/
 │   └── ApiResponse.java                     # Generic response wrapper
-└── exception/
-    ├── ApiException.java                    # Abstract base for custom exceptions
-    └── GlobalExceptionHandler.java          # RFC 7807 exception handler
+├── exception/
+│   ├── ApiException.java                    # Abstract base for custom exceptions
+│   └── GlobalExceptionHandler.java          # RFC 9457 exception handler
+└── filter/
+    └── TraceIdFilter.java                   # Request trace ID generation
 ```
 
 ### Package Overview
@@ -189,13 +179,15 @@ io.github.pasinduog
 | `config` | Spring Boot auto-configuration classes for zero-config setup |
 | `dto` | Data Transfer Objects - main `ApiResponse<T>` wrapper class |
 | `exception` | Exception handling infrastructure with ProblemDetail support |
+| `filter` | Servlet filters for trace ID generation and MDC management |
 
 ### Key Components
 
 - **ApiResponse<T>** - Type-safe response wrapper with factory methods
 - **ApiResponseAutoConfiguration** - Automatic Spring Boot integration
-- **GlobalExceptionHandler** - Centralized exception handling with RFC 7807
+- **GlobalExceptionHandler** - Centralized exception handling with RFC 9457
 - **ApiException** - Base class for domain-specific exceptions
+- **TraceIdFilter** - Automatic trace ID generation for distributed tracing
 
 ## 🎯 Quick Start
 
@@ -3027,9 +3019,9 @@ For the complete license text, see [LICENSE](LICENSE) or visit [Apache.org](http
 
 ## 📈 Version History
 
-### 2.0.0 (Unreleased) - Major Release with Enhanced Exception Handling
+### 2.0.0 (February 7, 2026) - Major Release with Enhanced Exception Handling
 
-⚠️ **Status: UNRELEASED** - This version is currently in development and not yet available on Maven Central.
+✅ **Now Available on Maven Central!**
 
 ✅ **New Features:**
 - **Enhanced Exception Handling** - Added 6 new exception handlers for comprehensive error coverage
@@ -3038,9 +3030,12 @@ For the complete license text, see [LICENSE](LICENSE) or visit [Apache.org](http
   - `NoResourceFoundException` - 404 Not Found for endpoints/resources (HTTP 404)
   - `HttpRequestMethodNotSupportedException` - Invalid HTTP method (HTTP 405)
   - `HttpMediaTypeNotSupportedException` - Unsupported Content-Type (HTTP 415)
+  - `NullPointerException` - Null pointer handling with detailed stack traces (HTTP 500)
+- **TraceIdFilter** - Automatic trace ID generation and MDC integration for distributed tracing
 - **RFC 9457 Compliance** - Updated to latest RFC 9457 (supersedes RFC 7807) for ProblemDetail format
 - **Production-Ready Error Responses** - Clear, actionable error messages for all common scenarios
 - **Clean Javadoc Build** - Zero warnings with explicit constructor documentation for all classes
+- **Apache 2.0 License** - Comprehensive license documentation with contributor protections
 - Major version bump to 2.0.0 for stable long-term support
 - All features from v1.3.0 maintained
 
