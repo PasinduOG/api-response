@@ -1,3 +1,5 @@
+<div align="center">
+
 # API Response Library
 
 <p align="center">
@@ -8,13 +10,29 @@
   <em>A lightweight, type-safe API Response wrapper for Spring Boot applications</em>
 </p>
 
-[![Maven Central](https://img.shields.io/maven-central/v/io.github.pasinduog/api-response.svg)](https://central.sonatype.com/artifact/io.github.pasinduog/api-response)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Java](https://img.shields.io/badge/Java-17+-orange.svg)](https://www.oracle.com/java/)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0.2-brightgreen.svg)](https://spring.io/projects/spring-boot)
-[![Version](https://img.shields.io/badge/Version-3.0.0-brightgreen.svg)](https://github.com/pasinduog/api-response)
+<p align="center">
+  <a href="https://central.sonatype.com/artifact/io.github.pasinduog/api-response">
+    <img src="https://img.shields.io/maven-central/v/io.github.pasinduog/api-response.svg" alt="Maven Central">
+  </a>
+  <a href="https://opensource.org/licenses/Apache-2.0">
+    <img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License">
+  </a>
+  <a href="https://www.oracle.com/java/">
+    <img src="https://img.shields.io/badge/Java-17+-orange.svg" alt="Java">
+  </a>
+  <a href="https://spring.io/projects/spring-boot">
+    <img src="https://img.shields.io/badge/Spring%20Boot-4.0.2-brightgreen.svg" alt="Spring Boot">
+  </a>
+  <a href="https://github.com/pasinduog/api-response">
+    <img src="https://img.shields.io/badge/Version-3.0.0-brightgreen.svg" alt="Version">
+  </a>
+</p>
 
+<p align="center">
 A lightweight, type-safe API Response wrapper for Spring Boot applications. Standardize your REST API responses with consistent structure, automatic timestamps, distributed tracing support, and clean factory methods. Features zero-configuration Spring Boot auto-configuration and production-ready exception handling with comprehensive RFC 9457 ProblemDetail support covering 10 common error scenarios. No external dependencies required - uses pure Java with a custom builder pattern.
+</p>
+
+</div>
 
 
 ## 🔗 Quick Links
