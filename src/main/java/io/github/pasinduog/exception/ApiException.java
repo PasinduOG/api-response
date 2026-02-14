@@ -1,48 +1,43 @@
 package io.github.pasinduog.exception;
 
-import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
 /**
- * Base abstract class for all custom API exceptions in the application.
+ * Base abstract exception class for API-related exceptions.
  * <p>
- * Instead of throwing generic exceptions, developers should extend this class
- * to create specific business exceptions. This allows the {@link GlobalExceptionHandler}
- * to automatically capture the specific {@link HttpStatus} and message defined by the subclass.
+ * This class provides a foundation for creating custom business logic exceptions
+ * with associated HTTP status codes. Extend this class to create specific
+ * exception types for your application.
  * </p>
- *
- * <h2>Example Usage:</h2>
- * <pre>
- * {@code
- * public class ResourceNotFoundException extends ApiException {
- *     public ResourceNotFoundException(String resource, Long id) {
- *         super(String.format("%s not found with ID: %d", resource, id), HttpStatus.NOT_FOUND);
- *     }
- * }
- * }
- * </pre>
  *
  * @author Pasindu OG
  * @version 2.0.0
- * @since 1.2.0
- * @see GlobalExceptionHandler
+ * @since 1.0.0
  */
-@Getter
 public abstract class ApiException extends RuntimeException {
 
     /**
-     * The HTTP status associated with this specific exception.
+     * The HTTP status code associated with this exception.
      */
     private final HttpStatus status;
 
     /**
-     * Constructs a new ApiException with a detailed message and specific HTTP status.
+     * Constructs a new ApiException with the specified message and status.
      *
-     * @param message The detail message explaining the cause of the error.
-     * @param status  The {@link HttpStatus} to be returned to the client.
+     * @param message the detail message
+     * @param status the HTTP status code
      */
     protected ApiException(String message, HttpStatus status) {
         super(message);
         this.status = status;
+    }
+
+    /**
+     * Gets the HTTP status code associated with this exception.
+     *
+     * @return the HTTP status
+     */
+    public HttpStatus getStatus() {
+        return status;
     }
 }
