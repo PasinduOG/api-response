@@ -3,35 +3,44 @@ package io.github.pasinduog.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Getter;
-import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.time.Instant;
-import java.util.UUID;
 
 /**
  * Standard API Response wrapper for Spring Boot Applications.
  * <p>
  * This class provides a consistent structure for all API responses, ensuring that
  * clients always receive a predictable format including a status code, message,
- * content payload, and metadata like timestamps and trace IDs for debugging.
+ * content payload, and metadata like timestamps for debugging.
  * </p>
  * <p>
- * <b>New in v2.0.0:</b> Automatic traceId generation from SLF4J MDC for distributed
- * tracing support. If a traceId exists in the MDC context (e.g., from {@link io.github.pasinduog.filter.TraceIdFilter}),
- * it will be used automatically. Otherwise, a random UUID is generated.
+ * <b>Important:</b> This class is used for <b>success responses only</b>. Error responses
+ * use Spring's ProblemDetail format (RFC 9457) which includes trace IDs. Success responses
+ * do not include trace IDs in the response body, but trace IDs can be propagated via
+ * HTTP headers using {@link io.github.pasinduog.filter.TraceIdFilter} for distributed tracing.
  * </p>
  *
  * <h2>Key Features:</h2>
  * <ul>
  *   <li>Consistent response structure across all API endpoints</li>
- *   <li>Automatic traceId generation for request tracking</li>
  *   <li>ISO-8601 UTC timestamps for all responses</li>
  *   <li>Null-safe with Jackson's @JsonInclude for clean JSON output</li>
  *   <li>Fluent builder pattern via Lombok @Builder</li>
  *   <li>Static factory methods for common HTTP status codes</li>
+ *   <li>Type-safe generic content payload</li>
  * </ul>
+ *
+ * <h2>Response Structure:</h2>
+ * <pre>
+ * {
+ *   "status": 200,
+ *   "message": "Operation successful",
+ *   "content": { ... },
+ *   "timestamp": "2026-02-15T10:30:45.123Z"
+ * }
+ * </pre>
  *
  * <h2>Usage Examples:</h2>
  * <pre>
@@ -47,19 +56,31 @@ import java.util.UUID;
  *
  * // Custom status code
  * return ApiResponse.status("Custom message", content, HttpStatus.ACCEPTED);
+ *
+ * // With list content
+ * List<UserDto> users = userService.findAll();
+ * return ApiResponse.success("Users fetched successfully", users);
  * }
  * </pre>
  *
- * @param <T> The type of the content object included in the response body.
+ * <h2>Distributed Tracing:</h2>
+ * <p>
+ * For distributed tracing support, use {@link io.github.pasinduog.filter.TraceIdFilter}
+ * to add trace IDs to HTTP response headers (e.g., X-Trace-Id). Trace IDs are also
+ * automatically included in error responses via the GlobalExceptionHandler.
+ * </p>
+ *
  * @author Pasindu OG
- * @version 2.0.0
+ * @version 2.0.1
  * @since 1.0.0
+ * @param <T> The type of the content object included in the response body.
  * @see org.springframework.http.ResponseEntity
- * @see org.slf4j.MDC
+ * @see io.github.pasinduog.exception.GlobalExceptionHandler
+ * @see io.github.pasinduog.filter.TraceIdFilter
  */
 @Getter
 @Builder
-@SuppressWarnings({"unused", "ClassCanBeRecord"})
+@SuppressWarnings("unused")
 public class ApiResponse<T> {
 
     /**
@@ -70,31 +91,40 @@ public class ApiResponse<T> {
     private final Integer status;
 
     /**
-     * A unique identifier for the request/response cycle.
+     * A descriptive message about the API result.
      * <p>
-     * Useful for distributed tracing and log correlation in microservices.
-     * Automatically retrieved from SLF4J's MDC (Mapped Diagnostic Context) if available,
-     * or defaults to a randomly generated UUID if no traceId exists in MDC.
+     * This message provides human-readable context about the operation result,
+     * such as "User created successfully" or "Operation completed".
      * </p>
      * <p>
-     * When using {@link io.github.pasinduog.filter.TraceIdFilter}, this will automatically
-     * contain the filter-generated traceId for seamless request tracking.
+     * Best practices:
      * </p>
-     *
-     * @see org.slf4j.MDC
-     */
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private final UUID traceId;
-
-    /**
-     * A descriptive message about the API result (e.g., "Operation successful" or error details).
+     * <ul>
+     *   <li>Use clear, user-friendly language</li>
+     *   <li>Be consistent across similar operations</li>
+     *   <li>Avoid technical jargon when possible</li>
+     *   <li>Include relevant entity names (e.g., "User", "Order")</li>
+     * </ul>
      */
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private final String message;
 
     /**
      * The actual payload of the response.
-     * Can be a DTO, a List, or null if no content is returned.
+     * <p>
+     * Can be any type including:
+     * </p>
+     * <ul>
+     *   <li>A single DTO object (e.g., {@code UserDto})</li>
+     *   <li>A collection (e.g., {@code List&lt;UserDto&gt;})</li>
+     *   <li>{@code null} if no content is returned (e.g., DELETE operations)</li>
+     *   <li>Primitive wrappers (e.g., {@code Boolean}, {@code Integer})</li>
+     *   <li>Complex nested structures</li>
+     * </ul>
+     * <p>
+     * The content is serialized to JSON automatically by Jackson.
+     * Use {@code @JsonInclude(JsonInclude.Include.NON_NULL)} on your DTOs to exclude null fields.
+     * </p>
      */
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private final T content;
@@ -106,8 +136,18 @@ public class ApiResponse<T> {
      * The timestamp is in ISO-8601 format when serialized to JSON.
      * </p>
      * <p>
-     * Example JSON output: {@code "timestamp": "2026-02-06T10:30:45.123Z"}
+     * Example JSON output: {@code "timestamp": "2026-02-15T10:30:45.123Z"}
      * </p>
+     * <p>
+     * This field is automatically populated during construction. If not explicitly provided,
+     * it uses the current system time. The timestamp helps with:
+     * </p>
+     * <ul>
+     *   <li>Request debugging and log correlation</li>
+     *   <li>Performance monitoring and SLA tracking</li>
+     *   <li>Cache validation and staleness detection</li>
+     *   <li>Audit trails and compliance reporting</li>
+     * </ul>
      */
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private final Instant timestamp;
@@ -119,43 +159,18 @@ public class ApiResponse<T> {
      * It is recommended to use static factory methods like {@link #success(String, Object)},
      * {@link #created(String, Object)}, or the builder pattern instead of calling this directly.
      * </p>
-     * <p>
-     * The traceId is resolved with the following priority:
-     * </p>
-     * <ol>
-     *   <li>Use the explicitly provided traceId parameter (if not null)</li>
-     *   <li>Retrieve from SLF4J MDC context (set by {@link io.github.pasinduog.filter.TraceIdFilter})</li>
-     *   <li>Generate a new random UUID as fallback</li>
-     * </ol>
      *
-     * @param status The HTTP status code.
-     * @param traceId The unique trace identifier for this request (null to auto-retrieve from MDC or generate).
-     * @param message A descriptive message about the result.
-     * @param content The response payload content.
-     * @param timestamp The timestamp when the response was created (null to use current time).
+     * @param status The HTTP status code (e.g., 200, 201, 400). Should match the HTTP response status.
+     * @param message A descriptive message about the result (e.g., "User created successfully").
+     * @param content The response payload content. Can be any type or null.
+     * @param timestamp The timestamp when the response was created. If null, defaults to {@link Instant#now()}.
      */
     @SuppressWarnings("java:S107") // Constructor generated by Lombok @Builder, not called directly
-    public ApiResponse(Integer status, UUID traceId, String message, T content, Instant timestamp) {
+    public ApiResponse(Integer status, String message, T content, Instant timestamp) {
         this.status = status;
-        this.traceId = traceId != null ? traceId : getTraceIdFromMDC();
         this.message = message;
         this.content = content;
         this.timestamp = timestamp != null ? timestamp : Instant.now();
-    }
-
-    /**
-     * Retrieves traceId from SLF4J MDC or generates a new random UUID.
-     * <p>
-     * This method checks if a traceId exists in the MDC context (typically set by
-     * {@link io.github.pasinduog.filter.TraceIdFilter}). If found, it parses and returns it.
-     * Otherwise, it generates a new random UUID.
-     * </p>
-     *
-     * @return The traceId from MDC or a newly generated UUID.
-     */
-    private static UUID getTraceIdFromMDC() {
-        String mdcTraceId = MDC.get("traceId");
-        return mdcTraceId != null ? UUID.fromString(mdcTraceId) : UUID.randomUUID();
     }
 
     /**
@@ -176,9 +191,9 @@ public class ApiResponse<T> {
      * }
      * </pre>
      *
+     * @param <T> The type of the content.
      * @param message The success message to be displayed to the client.
-     * @param content    The created content object (e.g., the saved User DTO).
-     * @param <T>     The type of the content.
+     * @param content The created content object (e.g., the saved User DTO).
      * @return A {@link ResponseEntity} containing the {@link ApiResponse} with HTTP 201 status.
      */
     public static <T> ResponseEntity<ApiResponse<T>> created(String message, T content) {
@@ -244,9 +259,9 @@ public class ApiResponse<T> {
      * }
      * </pre>
      *
+     * @param <T> The type of the content.
      * @param message The success message.
-     * @param content    The content object to return (e.g., a UserDto or List&lt;UserDto&gt;).
-     * @param <T>     The type of the content.
+     * @param content The content object to return (e.g., a UserDto or List&lt;UserDto&gt;).
      * @return A {@link ResponseEntity} containing the {@link ApiResponse} with HTTP 200 status.
      */
     public static <T> ResponseEntity<ApiResponse<T>> success(String message, T content) {
@@ -278,7 +293,7 @@ public class ApiResponse<T> {
      * </pre>
      *
      * @param message The message to include in the response.
-     * @param status  The specific {@link HttpStatus} to return.
+     * @param status The specific {@link HttpStatus} to return.
      * @return A {@link ResponseEntity} containing the {@link ApiResponse} with the specified status.
      */
     public static ResponseEntity<ApiResponse<Void>> status(String message, HttpStatus status) {
@@ -307,10 +322,10 @@ public class ApiResponse<T> {
      * }
      * </pre>
      *
+     * @param <T> The type of the content.
      * @param message The message to include in the response.
-     * @param content    The content object to return.
-     * @param status  The specific {@link HttpStatus} to return.
-     * @param <T>     The type of the content.
+     * @param content The content object to return.
+     * @param status The specific {@link HttpStatus} to return.
      * @return A {@link ResponseEntity} containing the {@link ApiResponse} with the specified status.
      */
     public static <T> ResponseEntity<ApiResponse<T>> status(String message, T content, HttpStatus status) {

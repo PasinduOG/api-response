@@ -13,9 +13,9 @@
 [![Java](https://img.shields.io/badge/Java-17+-orange.svg)](https://www.oracle.com/java/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0.2-brightgreen.svg)](https://spring.io/projects/spring-boot)
 [![Lombok](https://img.shields.io/badge/Lombok-1.18.42-blue.svg)](https://projectlombok.org/)
-[![Version](https://img.shields.io/badge/Version-2.0.0-brightgreen.svg)](https://github.com/pasinduog/api-response)
+[![Version](https://img.shields.io/badge/Version-2.0.1-brightgreen.svg)](https://github.com/pasinduog/api-response)
 
-A lightweight, type-safe API Response wrapper for Spring Boot applications. Standardize your REST API responses with consistent structure, automatic timestamps, distributed tracing support, built-in pagination, and clean factory methods. Features zero-configuration Spring Boot auto-configuration and production-ready exception handling with comprehensive RFC 9457 ProblemDetail support covering 10 common error scenarios.
+A lightweight, type-safe API Response wrapper for Spring Boot applications. Standardize your REST API responses with consistent structure, automatic timestamps, distributed tracing support, and clean factory methods. Features zero-configuration Spring Boot auto-configuration and production-ready exception handling with comprehensive RFC 9457 ProblemDetail support covering 10 common error scenarios.
 
 
 ## 🔗 Quick Links
@@ -63,28 +63,28 @@ A lightweight, type-safe API Response wrapper for Spring Boot applications. Stan
 
 - 🚀 **Truly Zero Configuration** - Spring Boot 3.x/4.x auto-configuration with META-INF imports
 - 🎯 **Production-Ready** - Built-in RFC 9457 ProblemDetail with 10 comprehensive exception handlers
-- 🛡️ **Complete Error Coverage** - Handles validation, JSON parsing, 404s, method mismatches, media types, and more *(New in v2.0.0)*
-- 🔍 **Consistent Trace IDs** - Logs and error responses always have matching trace IDs for easy debugging *(New in v2.0.0)*
-- 🔒 **Type-Safe & Immutable** - Thread-safe design with generic type support
+- 🛡️ **Complete Error Coverage** - Handles validation, JSON parsing, 404s, method mismatches, media types, and more
+- 🔍 **Consistent Trace IDs** - Logs and error responses always have matching trace IDs for easy debugging
+- 🔒 **Type-Safe & Immutable** - Thread-safe design with generic type support using Lombok @Builder
 - 📦 **Ultra-Lightweight** - Only ~10KB JAR size with provided dependencies
-- 🔍 **Microservices-Ready** - Built-in trace IDs for distributed tracing
+- 🔍 **Microservices-Ready** - Built-in trace IDs for distributed tracing with MDC integration
 - ✅ **Battle-Tested** - Used in production Spring Boot applications
-- 📋 **Clean Javadoc** - Zero warnings with explicit constructor documentation *(New in v2.0.0)*
+- 📋 **Clean Javadoc** - Zero warnings with comprehensive documentation
 
 ## ✨ Features
 
-- 🎯 **Consistent Structure** - All responses follow the same format: `status`, `traceId`, `message`, `content`, `timestamp`
+- 🎯 **Consistent Structure** - All responses follow the same format: `status`, `message`, `content`, `timestamp`
 - 🔒 **Type-Safe** - Full generic type support with compile-time type checking
-- 🔍 **Distributed Tracing** - Auto-generated UUID trace IDs with MDC integration for request tracking *(Enhanced in v2.0.0)*
+- 🔍 **Distributed Tracing** - Auto-generated UUID trace IDs with SLF4J MDC integration for request tracking
 - ⏰ **Auto Timestamps** - Automatic RFC 3339 UTC formatted timestamps on every response
 - 🏭 **Factory Methods** - Clean static methods: `success()`, `created()`, `status()`
-- 🚀 **Zero Config** - Spring Boot Auto-Configuration for instant setup *(Enhanced in v1.3.0)*
+- 🚀 **Zero Config** - Spring Boot Auto-Configuration for instant setup
 - 🪶 **Lightweight** - Only ~10KB JAR with provided dependencies (Spring Web + Lombok)
-- 📦 **Immutable** - Thread-safe with final fields
+- 📦 **Immutable** - Thread-safe with final fields and Lombok @Builder pattern
 - 🔌 **Spring Native** - Built on `ResponseEntity` and `HttpStatus`
-- 📋 **RFC 9457 Compliance** - Standard ProblemDetail format (supersedes RFC 7807) *(Updated in v2.0.0)*
-- 📚 **Complete JavaDoc** - Every class fully documented with explicit constructor documentation *(New in v2.0.0)*
-- 🛡️ **Comprehensive Exception Handling** - 10 built-in handlers covering all common scenarios *(Enhanced in v2.0.0)*
+- 📋 **RFC 9457 Compliance** - Standard ProblemDetail format (supersedes RFC 7807) for error responses
+- 📚 **Complete JavaDoc** - Every class fully documented with zero Maven warnings
+- 🛡️ **Comprehensive Exception Handling** - 10 built-in handlers covering all common scenarios:
   - ✅ Validation errors (`@Valid` annotations)
   - ✅ Type mismatches (wrong parameter types)
   - ✅ Malformed JSON (invalid request bodies)
@@ -95,7 +95,7 @@ A lightweight, type-safe API Response wrapper for Spring Boot applications. Stan
   - ✅ Null pointer exceptions
   - ✅ Custom business exceptions (`ApiException`)
   - ✅ General unexpected errors
-- 🎭 **Custom Business Exceptions** - Abstract `ApiException` class for domain-specific errors *(New in v1.2.0)*
+- 🎭 **Custom Business Exceptions** - Abstract `ApiException` class for domain-specific errors
 - ✅ **Validation Support** - Automatic `@Valid` annotation error handling
 
 ## 📦 Requirements
@@ -103,6 +103,8 @@ A lightweight, type-safe API Response wrapper for Spring Boot applications. Stan
 - Java 17 or higher
 - Spring Boot 3.2.0 or higher (tested up to 4.0.2)
 - Lombok 1.18.30+ (1.18.42 recommended, compile-time only, provided scope)
+
+**Note:** Lombok is required as a compile-time dependency. Make sure your IDE has the Lombok plugin installed.
 
 ## 🌟 What Makes This Different?
 
@@ -112,31 +114,32 @@ Unlike other response wrapper libraries, this one offers:
 - ✅ **RFC 9457 ProblemDetail Support** - Industry-standard error responses (latest RFC)
 - ✅ **Provided Dependencies** - Won't conflict with your application's versions
 - ✅ **Extensible Exception Handling** - Create custom business exceptions easily
-- ✅ **Trace ID Support** - Built-in distributed tracing capabilities
-- ✅ **Comprehensive JavaDoc** - Every class fully documented with explicit constructor documentation and zero warnings
+- ✅ **Trace ID Support** - Built-in distributed tracing with SLF4J MDC integration
+- ✅ **Comprehensive JavaDoc** - Every class fully documented with zero Maven warnings
 - ✅ **Production-Grade Quality** - Clean builds, proper documentation, and battle-tested code
+- ✅ **Lombok Builder Pattern** - Clean, fluent API for response construction
 ## 🚀 Installation
 
-### Maven (Latest - v2.0.0)
+### Maven (Latest - v2.0.1)
 
 ```xml
 <dependency>
     <groupId>io.github.pasinduog</groupId>
     <artifactId>api-response</artifactId>
-    <version>2.0.0</version>
+    <version>2.0.1</version>
 </dependency>
 ```
 
-### Gradle (Latest - v2.0.0)
+### Gradle (Latest - v2.0.1)
 
 ```gradle
-implementation 'io.github.pasinduog:api-response:2.0.0'
+implementation 'io.github.pasinduog:api-response:2.0.1'
 ```
 
-### Gradle Kotlin DSL (Latest - v2.0.0)
+### Gradle Kotlin DSL (Latest - v2.0.1)
 
 ```kotlin
-implementation("io.github.pasinduog:api-response:2.0.0")
+implementation("io.github.pasinduog:api-response:2.0.1")
 ```
 
 ---
@@ -153,7 +156,7 @@ If you need the previous stable version:
 </dependency>
 ```
 
-**Note:** Version 2.0.0 includes 6 additional exception handlers and enhanced features compared to v1.3.0. See [Version History](#-version-history) for details.
+**Note:** Version 2.0.1 includes refined success response format (trace IDs only in error responses). Version 2.0.0 included 6 additional exception handlers and enhanced features compared to v1.3.0. See [Version History](#-version-history) for details.
 
 ## 📁 Project Structure
 
@@ -212,26 +215,27 @@ public class UserController {
 ```json
 {
   "status": 200,
-  "traceId": "550e8400-e29b-41d4-a716-446655440000",
   "message": "User retrieved successfully",
   "content": {
     "id": 1,
     "name": "John Doe",
     "email": "john@example.com"
   },
-  "timestamp": "2026-02-06T10:30:45.123Z"
+  "timestamp": "2026-02-15T10:30:45.123Z"
 }
 ```
 
-## ⚙️ Auto-Configuration (New in v1.3.0)
+**Note:** Success responses do NOT include `traceId` in the response body. Trace IDs are only included in error responses (ProblemDetail format). For distributed tracing in success responses, use HTTP headers with `TraceIdFilter`.
 
-The library now features **Spring Boot Auto-Configuration** for truly zero-config setup! Simply add the dependency and everything works automatically.
+## ⚙️ Auto-Configuration
+
+The library features **Spring Boot Auto-Configuration** for truly zero-config setup! Simply add the dependency and everything works automatically.
 
 ### What Gets Auto-Configured
 
 When you include this library in your Spring Boot application, the following components are automatically registered:
 
-✅ **GlobalExceptionHandler** - Automatic exception handling with RFC 7807 ProblemDetail format  
+✅ **GlobalExceptionHandler** - Automatic exception handling with RFC 9457 ProblemDetail format  
 ✅ **Component Scanning** - All library components are automatically discovered  
 ✅ **Bean Registration** - No manual @ComponentScan or @Import required  
 
@@ -267,30 +271,30 @@ Or in `application.properties`:
 spring.autoconfigure.exclude=io.github.pasinduog.config.ApiResponseAutoConfiguration
 ```
 
-## 🛡️ Built-in Exception Handling (Enhanced in v1.2.0)
+## 🛡️ Built-in Exception Handling
 
-The library includes a **production-ready `GlobalExceptionHandler`** that automatically handles common exceptions using Spring Boot's **ProblemDetail (RFC 7807)** standard.
+The library includes a **production-ready `GlobalExceptionHandler`** that automatically handles common exceptions using Spring Boot's **ProblemDetail (RFC 9457)** standard.
 
 ### What's Included
 
 ✅ **General Exception Handler** - Catches all unhandled exceptions (HTTP 500)  
 ✅ **Validation Error Handler** - Automatically processes `@Valid` annotation failures (HTTP 400)  
-✅ **Type Mismatch Handler** - Handles method argument type conversion errors (HTTP 400) *(New in v1.3.0)*  
-✅ **Malformed JSON Handler** - Handles invalid JSON request bodies (HTTP 400) *(New in v2.0.0)*  
-✅ **Missing Parameter Handler** - Detects missing required request parameters (HTTP 400) *(New in v2.0.0)*  
-✅ **404 Not Found Handler** - Handles missing endpoints and resources (HTTP 404) *(New in v2.0.0)*  
-✅ **Method Not Allowed Handler** - Handles unsupported HTTP methods (HTTP 405) *(New in v2.0.0)*  
-✅ **Unsupported Media Type Handler** - Handles invalid Content-Type headers (HTTP 415) *(New in v2.0.0)*  
+✅ **Type Mismatch Handler** - Handles method argument type conversion errors (HTTP 400)  
+✅ **Malformed JSON Handler** - Handles invalid JSON request bodies (HTTP 400)  
+✅ **Missing Parameter Handler** - Detects missing required request parameters (HTTP 400)  
+✅ **404 Not Found Handler** - Handles missing endpoints and resources (HTTP 404)  
+✅ **Method Not Allowed Handler** - Handles unsupported HTTP methods (HTTP 405)  
+✅ **Unsupported Media Type Handler** - Handles invalid Content-Type headers (HTTP 415)  
 ✅ **Null Pointer Handler** - Specific handling for NullPointerException (HTTP 500)  
-✅ **Custom ApiException Handler** - Handles custom business exceptions extending `ApiException` *(New in v1.2.0)*  
-✅ **Automatic Logging** - SLF4J integration for all errors with consistent trace IDs *(Enhanced in v2.0.0)*  
-✅ **Trace ID Consistency** - Logs and responses always have matching trace IDs *(New in v2.0.0)*  
+✅ **Custom ApiException Handler** - Handles custom business exceptions extending `ApiException`  
+✅ **Automatic Logging** - SLF4J integration for all errors with consistent trace IDs  
+✅ **Trace ID Consistency** - Logs and responses always have matching trace IDs  
 ✅ **Timestamp Support** - All error responses include RFC 3339 timestamps  
-✅ **RFC 9457 Compliance** - Standard ProblemDetail format (supersedes RFC 7807) *(New in v2.0.0)*
+✅ **RFC 9457 Compliance** - Standard ProblemDetail format (supersedes RFC 7807)
 
-### Trace ID Consistency (New in v2.0.0)
+### Trace ID Consistency
 
-All exception handlers now ensure **consistent trace IDs** between logs and error responses:
+All exception handlers ensure **consistent trace IDs** between logs and error responses:
 
 - **With TraceIdFilter**: Uses the trace ID from SLF4J MDC
 - **Without Filter**: Generates a UUID and stores it in MDC for consistent logging
@@ -315,9 +319,9 @@ All exception handlers now ensure **consistent trace IDs** between logs and erro
 ✅ **Easy debugging** - Copy trace ID from response and find all related logs  
 ✅ **Thread-safe** - Proper MDC management ensures no cross-thread contamination  
 
-### Custom Business Exceptions (New in v1.2.0)
+### Custom Business Exceptions
 
-Instead of throwing generic exceptions, you can now extend the **abstract `ApiException` class** to create domain-specific exceptions with automatic exception handling:
+Instead of throwing generic exceptions, extend the **abstract `ApiException` class** to create domain-specific exceptions with automatic exception handling:
 
 ```java
 public class ResourceNotFoundException extends ApiException {
@@ -411,7 +415,7 @@ public ResponseEntity<ApiResponse<User>> createUser(@Valid @RequestBody UserDto 
 }
 ```
 
-### Example: Malformed JSON Errors *(New in v2.0.0)*
+### Example: Malformed JSON Errors
 
 When a client sends invalid JSON (missing quotes, commas, etc.):
 
@@ -437,7 +441,7 @@ Content-Type: application/json
 }
 ```
 
-### Example: Missing Required Parameters *(New in v2.0.0)*
+### Example: Missing Required Parameters
 
 When a required `@RequestParam` is missing:
 
@@ -460,7 +464,7 @@ public ResponseEntity<ApiResponse<List<User>>> search(
 }
 ```
 
-### Example: 404 Not Found *(New in v2.0.0)*
+### Example: 404 Not Found
 
 When accessing a non-existent endpoint or resource:
 
@@ -540,7 +544,7 @@ java.lang.RuntimeException: Database connection failed
 ```
 ```
 
-## 🔍 Distributed Tracing (Enhanced in v2.0.0)
+## 🔍 Distributed Tracing
 
 The library provides **production-ready distributed tracing** with automatic trace ID generation and MDC (Mapped Diagnostic Context) integration for seamless log correlation across your microservices architecture.
 
@@ -1459,17 +1463,18 @@ public class CustomExceptionHandler {
 
 ## 🔍 Response Structure
 
-All responses follow this consistent structure:
+All **success responses** follow this consistent structure:
 
 ```json
 {
   "status": 200,
-  "traceId": "550e8400-e29b-41d4-a716-446655440000",
   "message": "string",
   "content": {},
-  "timestamp": "2026-02-06T10:30:45.123456Z"
+  "timestamp": "2026-02-15T10:30:45.123456Z"
 }
 ```
+
+**Note:** Success responses do NOT include `traceId`. Trace IDs are only included in **error responses** (ProblemDetail format).
 
 ### Examples
 
@@ -1477,14 +1482,13 @@ All responses follow this consistent structure:
 ```json
 {
   "status": 200,
-  "traceId": "550e8400-e29b-41d4-a716-446655440000",
   "message": "Product found",
-  "data": {
+  "content": {
     "id": 1,
     "name": "Laptop",
     "price": 999.99
   },
-  "timestamp": "2026-02-01T10:30:45.123Z"
+  "timestamp": "2026-02-15T10:30:45.123Z"
 }
 ```
 
@@ -1492,13 +1496,12 @@ All responses follow this consistent structure:
 ```json
 {
   "status": 200,
-  "traceId": "550e8400-e29b-41d4-a716-446655440000",
   "message": "Products retrieved",
-  "data": [
+  "content": [
     {"id": 1, "name": "Laptop"},
     {"id": 2, "name": "Mouse"}
   ],
-  "timestamp": "2026-02-01T10:30:45.123Z"
+  "timestamp": "2026-02-15T10:30:45.123Z"
 }
 ```
 
@@ -1506,21 +1509,21 @@ All responses follow this consistent structure:
 ```json
 {
   "status": 200,
-  "traceId": "550e8400-e29b-41d4-a716-446655440000",
   "message": "Product deleted successfully",
-  "data": null,
-  "timestamp": "2026-02-01T10:30:45.123Z"
+  "content": null,
+  "timestamp": "2026-02-15T10:30:45.123Z"
 }
 ```
 
-**Error Response:**
+**Error Response (with traceId):**
 ```json
 {
+  "type": "about:blank",
+  "title": "Not Found",
   "status": 404,
+  "detail": "The requested resource '/api/products/123' was not found.",
   "traceId": "550e8400-e29b-41d4-a716-446655440000",
-  "message": "Product not found with ID: 123",
-  "data": null,
-  "timestamp": "2026-02-01T10:30:45.123Z"
+  "timestamp": "2026-02-15T10:30:45.123Z"
 }
 ```
 
@@ -1559,9 +1562,9 @@ ResponseEntity<ApiResponse<Map<String, Object>>> getMetadata();
 ResponseEntity<ApiResponse<Void>> deleteResource();
 ```
 
-### 4. Custom Business Exceptions (New in v1.2.0)
+### 4. Custom Business Exceptions
 
-**Version 1.2.0+ includes an abstract `ApiException` class** for creating domain-specific exceptions. The built-in `GlobalExceptionHandler` automatically handles them with the correct HTTP status:
+The library includes an abstract `ApiException` class for creating domain-specific exceptions. The built-in `GlobalExceptionHandler` automatically handles them with the correct HTTP status:
 
 ```java
 // Define custom exceptions
@@ -2170,9 +2173,16 @@ If you encounter issues not covered here:
 
 ## ❓ FAQ
 
-### How do I use trace IDs for debugging? *(Enhanced in v2.0.0)*
+### How do I use trace IDs for debugging?
 
-Every response includes an auto-generated UUID `traceId` for request tracking. For comprehensive distributed tracing with MDC integration, see the **[Distributed Tracing](#-distributed-tracing-enhanced-in-v200)** section above.
+**Error responses** automatically include a `traceId` (UUID) in the ProblemDetail format for request tracking and debugging. Success responses (ApiResponse) do NOT include traceId in the response body, but you can add trace IDs via headers using the TraceIdFilter.
+
+**Key Points:**
+- ✅ **Error responses** - traceId is automatically included in ProblemDetail JSON
+- ❌ **Success responses** - traceId is NOT in ApiResponse JSON (use headers instead)
+- 🔍 **Logging** - All exceptions are logged with [TraceID: xxx] for correlation
+
+For comprehensive distributed tracing with MDC integration, see the **[Distributed Tracing](#-distributed-tracing)** section above.
 
 **Quick Example with TraceIdFilter:**
 
@@ -3018,6 +3028,29 @@ For the complete license text, see [LICENSE](LICENSE) or visit [Apache.org](http
 - The open-source community
 
 ## 📈 Version History
+
+### 2.0.1 (February 15, 2026) - Success Response Refinement
+
+✅ **Breaking Changes:**
+- **Removed Trace ID from Success Responses** - Success responses (`ApiResponse`) no longer include `traceId` in the response body
+  - Trace IDs are still included in **all error responses** (ProblemDetail format)
+  - For distributed tracing in success flows, use HTTP headers with `TraceIdFilter` (see documentation)
+  - This change reduces response payload size and clarifies that trace IDs are primarily for error tracking
+
+🔧 **Improvements:**
+- Cleaner success response format focused on essential data (status, message, content, timestamp)
+- Better separation of concerns: trace IDs for error tracking, headers for distributed tracing
+- Reduced JSON payload size for success responses
+
+📝 **Documentation:**
+- Updated all examples to reflect new response structure
+- Enhanced distributed tracing documentation with header-based approach
+- Added clear notes about trace ID usage in success vs error responses
+
+📋 **Migration Guide from 2.0.0:**
+- Success responses no longer contain `traceId` field
+- Use `TraceIdFilter` with HTTP headers for distributed tracing
+- Error responses unchanged (still include trace IDs)
 
 ### 2.0.0 (February 7, 2026) - Major Release with Enhanced Exception Handling
 

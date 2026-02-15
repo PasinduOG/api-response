@@ -66,7 +66,7 @@ import java.util.UUID;
  * </ul>
  *
  * @author Pasindu OG
- * @version 2.0.0
+ * @version 2.0.1
  * @since 1.2.0
  * @see ProblemDetail
  * @see ApiException
