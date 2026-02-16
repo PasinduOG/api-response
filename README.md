@@ -4,6 +4,8 @@
 
 ## This project has been relocated to [OG4Dev Spring Response](https://github.com/og4dev/og4dev-spring-response)
 
+<div align="start">
+
 **New Coordinates:**
 ```xml
 <dependency>
@@ -12,6 +14,7 @@
     <version>1.0.0</version>
 </dependency>
 ```
+</div>
 
 ---
 
