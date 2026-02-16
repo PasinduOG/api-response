@@ -5,10 +5,10 @@
 
     <groupId>io.github.pasinduog</groupId>
     <artifactId>api-response</artifactId>
-    <version>3.0.0</version>
+    <version>3.0.1</version>
 
-    <name>API Response Library</name>
-    <description>Standard API Response wrapper for Spring Boot Applications</description>
+    <name>API Response Library (Deprecated / Relocated)</name>
+    <description>This project has been renamed and relocated to io.github.og4dev:og4dev-spring-response</description>
     <url>https://github.com/pasinduog/api-response</url>
 
     <licenses>
@@ -60,6 +60,15 @@
             <scope>provided</scope>
         </dependency>
     </dependencies>
+
+    <distributionManagement>
+        <relocation>
+            <groupId>io.github.og4dev</groupId>
+            <artifactId>og4dev-spring-response</artifactId>
+            <version>1.0.0</version>
+            <message>We have rebranded! The api-response library is now og4dev-spring-response under the OG4Dev organization. Please update your dependencies.</message>
+        </relocation>
+    </distributionManagement>
 
     <build>
         <plugins>

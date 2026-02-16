@@ -1,16 +1,37 @@
 <div align="center">
 
-# API Response Library
+# ⚠️ DEPRECATED - Project Relocated
+
+## This project has been relocated to [OG4Dev Spring Response](https://github.com/og4dev/og4dev-spring-response)
+
+**New Coordinates:**
+```xml
+<dependency>
+    <groupId>io.github.og4dev</groupId>
+    <artifactId>og4dev-spring-response</artifactId>
+    <version>1.0.0</version>
+</dependency>
+```
+
+---
+
+# API Response Library (Deprecated)
 
 <p align="center">
   <img src="https://skillicons.dev/icons?i=java,spring,maven,git,github,idea" alt="Tech Stack" />
 </p>
 
 <p align="center">
-  <em>A lightweight, type-safe API Response wrapper for Spring Boot applications</em>
+  <em>⚠️ This library is deprecated. Please use <a href="https://github.com/og4dev/og4dev-spring-response">og4dev-spring-response</a> instead.</em>
 </p>
 
 <p align="center">
+  <a href="https://github.com/og4dev/og4dev-spring-response">
+    <img src="https://img.shields.io/badge/Status-DEPRECATED-red.svg" alt="Deprecated">
+  </a>
+  <a href="https://github.com/og4dev/og4dev-spring-response">
+    <img src="https://img.shields.io/badge/Relocated%20To-OG4Dev-blue.svg" alt="Relocated">
+  </a>
   <a href="https://central.sonatype.com/artifact/io.github.pasinduog/api-response">
     <img src="https://img.shields.io/maven-central/v/io.github.pasinduog/api-response.svg" alt="Maven Central">
   </a>
@@ -24,8 +45,12 @@
     <img src="https://img.shields.io/badge/Spring%20Boot-4.0.2-brightgreen.svg" alt="Spring Boot">
   </a>
   <a href="https://github.com/pasinduog/api-response">
-    <img src="https://img.shields.io/badge/Version-3.0.0-brightgreen.svg" alt="Version">
+    <img src="https://img.shields.io/badge/Version-3.0.1-brightgreen.svg" alt="Version">
   </a>
+</p>
+
+<p align="center">
+⚠️ <strong>DEPRECATED:</strong> This project has been rebranded and relocated to <a href="https://github.com/og4dev/og4dev-spring-response">OG4Dev Spring Response</a>. Please update your dependencies to use <code>io.github.og4dev:og4dev-spring-response:1.0.0</code> for future updates and support.
 </p>
 
 <p align="center">
@@ -37,16 +62,17 @@ A lightweight, type-safe API Response wrapper for Spring Boot applications. Stan
 
 ## 🔗 Quick Links
 
-- 📦 [Maven Central Repository](https://central.sonatype.com/artifact/io.github.pasinduog/api-response)
+- 🚀 **[NEW PROJECT - OG4Dev Spring Response](https://github.com/og4dev/og4dev-spring-response)** - Continue development here!
+- 📦 [Maven Central Repository (Deprecated)](https://central.sonatype.com/artifact/io.github.pasinduog/api-response)
 - 📚 [JavaDoc Documentation](https://javadoc.io/doc/io.github.pasinduog/api-response)
-- 🐛 [Report Issues](https://github.com/pasinduog/api-response/issues)
-- 💡 [Feature Requests](https://github.com/pasinduog/api-response/issues/new)
-- 🤝 [Contributing Guide](#-contributing)
+- 🐛 [Report Issues (Use new project)](https://github.com/og4dev/og4dev-spring-response/issues)
+- 💡 [Feature Requests (Use new project)](https://github.com/og4dev/og4dev-spring-response/issues/new)
+- 🤝 [Contributing Guide (Use new project)](https://github.com/og4dev/og4dev-spring-response)
 
 ## 📑 Table of Contents
 
 - [Quick Links](#-quick-links)
-
+- [🚨 IMPORTANT: Migration to OG4Dev](#-important-migration-to-og4dev)
 - [Key Highlights](#-key-highlights)
 - [Features](#-features)
 - [Requirements](#-requirements)
@@ -73,6 +99,85 @@ A lightweight, type-safe API Response wrapper for Spring Boot applications. Stan
 - [Contributing](#-contributing)
 - [License](#-license)
 - [Contact](#-contact)
+- [Acknowledgments](#-acknowledgments)
+- [Version History](#-version-history)
+
+---
+
+## 🚨 IMPORTANT: Migration to OG4Dev
+
+### This Project Has Been Relocated
+
+**`io.github.pasinduog:api-response`** → **`io.github.og4dev:og4dev-spring-response`**
+
+We have **rebranded** this library and moved it to the **OG4Dev organization** for better community support and long-term maintenance.
+
+### Quick Migration Guide
+
+#### 1. Update Your Dependencies
+
+**Maven:**
+```xml
+<!-- REMOVE THIS (Deprecated) -->
+<dependency>
+    <groupId>io.github.pasinduog</groupId>
+    <artifactId>api-response</artifactId>
+    <version>3.0.1</version>
+</dependency>
+
+<!-- ADD THIS (New) -->
+<dependency>
+    <groupId>io.github.og4dev</groupId>
+    <artifactId>og4dev-spring-response</artifactId>
+    <version>1.0.0</version>
+</dependency>
+```
+
+**Gradle:**
+```gradle
+// REMOVE THIS (Deprecated)
+implementation 'io.github.pasinduog:api-response:3.0.1'
+
+// ADD THIS (New)
+implementation 'io.github.og4dev:og4dev-spring-response:1.0.0'
+```
+
+#### 2. No Code Changes Required! ✅
+
+The API is **100% compatible**. You don't need to change any code - just update the dependency coordinates.
+
+```java
+// This works exactly the same in both versions
+return ApiResponse.success("User found", user);
+return ApiResponse.created("User created", newUser);
+```
+
+#### 3. Benefits of Migration
+
+- ✅ **Continued Support** - Active development and bug fixes
+- ✅ **New Features** - Latest enhancements and improvements
+- ✅ **Better Organization** - Professional organization structure
+- ✅ **Community Support** - Enhanced collaboration and contribution
+- ✅ **Long-term Maintenance** - Guaranteed ongoing support
+
+#### 4. What Happens if I Don't Migrate?
+
+- ⚠️ **No New Features** - Version 3.0.1 is the final release
+- ⚠️ **No Bug Fixes** - Critical issues won't be addressed
+- ⚠️ **No Support** - Questions and issues should go to new project
+- ✅ **Still Works** - Existing functionality continues to work
+
+### Need Help?
+
+Visit the new project for:
+- 📚 Updated documentation
+- 🐛 Issue reporting
+- 💬 Community discussions
+- 🚀 Latest features
+
+**New Repository:** [https://github.com/og4dev/og4dev-spring-response](https://github.com/og4dev/og4dev-spring-response)
+
+---
 - [Acknowledgments](#-acknowledgments)
 - [Version History](#-version-history)
 
@@ -3368,11 +3473,11 @@ The **API Response Library** is a production-ready, zero-configuration solution 
 
 ✅ **Instant Setup** - Add dependency, start using. No configuration needed.  
 ✅ **Battle-Tested** - Used in production Spring Boot applications  
-✅ **Modern Standards** - RFC 9457 ProblemDetail (v3.0.0+), Spring Boot 4.x support  
+✅ **Modern Standards** - RFC 9457 ProblemDetail (v3.0.0+), Spring Boot 4.x support
 ✅ **Developer Friendly** - Comprehensive docs, clear examples, active maintenance  
 ✅ **Lightweight** - Only ~10KB, zero runtime dependencies  
 ✅ **Type Safe** - Full generic support with compile-time checking  
-✅ **Pure Java** - No Lombok or external dependencies (v3.0.0+)  
+✅ **Pure Java** - No Lombok or external dependencies (v3.0.0+)
 
 ### 📊 Quick Stats
 
@@ -3388,7 +3493,7 @@ The **API Response Library** is a production-ready, zero-configuration solution 
 ### 🔗 Quick Access
 
 - 📦 **[Maven Central](https://central.sonatype.com/artifact/io.github.pasinduog/api-response)** - Download & integration
-- 📚 **[JavaDoc](https://javadoc.io/doc/io.github.pasinduog/api-response)** - Complete API documentation  
+- 📚 **[JavaDoc](https://javadoc.io/doc/io.github.pasinduog/api-response)** - Complete API documentation
 - 🐛 **[Issues](https://github.com/pasinduog/api-response/issues)** - Report bugs or request features
 - 💬 **[Discussions](https://github.com/pasinduog/api-response/discussions)** - Ask questions & share ideas
 
